@@ -10,9 +10,8 @@ class Time: public ILinkableObserver, public ILinkableSubject {
   public:
     Time() 
       : m_time(RTC_DS3231)
-    {}
-    void setup() {
-      m_time.begin();
+    {
+      _setup();
     }
     virtual void update(uint8_t reason, int value, uint8_t additionalData) {
       if (reason != Tick) {
@@ -30,13 +29,17 @@ class Time: public ILinkableObserver, public ILinkableSubject {
       m_minute = m_time.minutes;
       m_second = m_time.seconds;
 
-      notify(TimeUpdated);
+      notify(TimeUpdated, this);
     }
-    String getTimeStr() const { return m_time_str; }
+    const String & getTimeStr() const { return m_time_str; }
     uint8_t hour() const { return m_hour; }
     uint8_t minute() const { return m_minute; }
     uint8_t second() const { return m_second; }
   private:
+    void _setup() {
+      m_time.begin();
+    }
+
     String m_time_str;
     uint8_t m_hour;
     uint8_t m_minute;

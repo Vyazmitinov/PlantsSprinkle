@@ -14,36 +14,38 @@ public:
   const int ON = LOW;
   const int OFF = HIGH;
 
-  Pump(uint8_t powerPin)
-    : m_powerPin(powerPin)
-    , m_waitTicks(0)
+  Pump(Buffer & buffer)
+    : m_waitTicks(0)
     , m_pumping(false)
-  {}
-
-  void setup() {
-    pinMode(m_powerPin, OUTPUT);
-    digitalWrite(m_powerPin, OFF);
+  {
+    buffer.read(m_powerPin);
+    _setup();
   }
-  
+
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
     switch (reason) {
       case Tick: {
-        work();
+        _work();
         break;
       }
       case HSDry: {
-        startWork();
+        _startWork();
         break;
       }
       case HSWet: {
-        stopWork();
+        _stopWork();
         break;
       }
     }
   }
     
 private:
-  void startWork() {
+  void _setup() {
+    pinMode(m_powerPin, OUTPUT);
+    digitalWrite(m_powerPin, OFF);
+  }
+
+  void _startWork() {
     if (m_waitTicks > 0) {
       return;
     }
@@ -55,13 +57,13 @@ private:
     notify(PWorkStarted, 0);
   }
 
-  void work() {
+  void _work() {
     if (m_waitTicks > 0) {
       --m_waitTicks;
     }
   }
 
-  void stopWork() {
+  void _stopWork() {
     if (m_pumping == false) {
       return;
     }

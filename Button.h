@@ -6,31 +6,25 @@
 
 class Button: public ILinkableObserver, public ILinkableSubject {
 public:
-  struct Data {
-    uint8_t destinity;
-  };
-  Button(uint8_t pin, uint8_t destinity) 
-    : m_buttonPin(pin)
-    , m_destinity(destinity)
-  {}
-
-  void setup() {
-    pinMode(m_buttonPin, INPUT);
+  Button(Buffer & buffer) {
+    buffer.read(m_buttonPin);
+    _setup();
   }
-  
+
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
     if (reason == Tick) {
       if (digitalRead(m_buttonPin) == 1) {
-        Data data{m_destinity};
-        notify(ButtonPushed, &data);
+        notify(ButtonPushed, 0);
       }
     }
   }
 
 private:
+  void _setup() {
+    pinMode(m_buttonPin, INPUT);
+  }
 
   uint8_t m_buttonPin;
-  uint8_t m_destinity;
 };
 
 #endif // PUMPER_BUTTON_H

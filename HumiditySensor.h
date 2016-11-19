@@ -3,6 +3,7 @@
 
 #include "Common.h"
 #include "Observer.h"
+#include "Buffer.h"
 
 const long HSCheckDelay = 30000 / LoopDelay; // 30s
 
@@ -10,51 +11,49 @@ const int MeasuremensCount = 3;
 
 class HumiditySensor: public ILinkableObserver, public ILinkableSubject {
   class Measuremens {
-    public:
-      Measuremens() 
-        : m_curr(0)
-        , m_overfill(false)
-      {
-        for (uint8_t i = 0; i < MeasuremensCount; ++i) {
-          m_measurements[i] = 0;
-        }
+  public:
+    Measuremens()
+      : m_curr(0)
+      , m_overfill(false)
+    {
+      for (uint8_t i = 0; i < MeasuremensCount; ++i) {
+        m_measurements[i] = 0;
       }
-      void add(uint8_t measurement) {
-        m_measurements[m_curr] = measurement;
-        ++m_curr;
-        if (m_curr == MeasuremensCount) {
-          m_curr = 0;
-          m_overfill = true;
-        }
+    }
+    void add(uint8_t measurement) {
+      m_measurements[m_curr] = measurement;
+      ++m_curr;
+      if (m_curr == MeasuremensCount) {
+        m_curr = 0;
+        m_overfill = true;
       }
-      uint8_t average() const {
-        uint8_t sum = 0;
-        uint8_t count = m_overfill ? MeasuremensCount : m_curr;
-        if (count == 0) {
-          return 0;
-        }
-        for (uint8_t i = 0; i < count; ++i) {
-          sum += m_measurements[i];
-        }
-        return sum / count;
+    }
+    uint8_t average() const {
+      uint8_t sum = 0;
+      uint8_t count = m_overfill ? MeasuremensCount : m_curr;
+      if (count == 0) {
+        return 0;
       }
-    private:
-      uint8_t m_measurements[MeasuremensCount];
-      uint8_t m_curr;
-      bool m_overfill;
+      for (uint8_t i = 0; i < count; ++i) {
+        sum += m_measurements[i];
+      }
+      return sum / count;
+    }
+  private:
+    uint8_t m_measurements[MeasuremensCount];
+    uint8_t m_curr;
+    bool m_overfill;
   };
 public:
-  HumiditySensor(uint8_t powerPin, uint8_t analogPin, uint8_t level)
-    : m_powerPin(powerPin)
-    , m_analogPin(analogPin)
-    , m_checkDelay(0)
-    , m_level(level)
-  {}
-  void setup() {
-    pinMode(m_powerPin, OUTPUT);
-    pinMode(m_analogPin, INPUT);
-    digitalWrite(m_powerPin, LOW);
+  HumiditySensor(Buffer & buffer)
+    : m_checkDelay(0)
+  {
+    buffer.read(m_powerPin);
+    buffer.read(m_analogPin);
+    buffer.read(m_level);
+    _setup();
   }
+
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
     if (reason == Tick) {
       tick();
@@ -67,6 +66,12 @@ public:
     }
   }
 private:
+  void _setup() {
+    pinMode(m_powerPin, OUTPUT);
+    pinMode(m_analogPin, INPUT);
+    digitalWrite(m_powerPin, LOW);
+  }
+
   const int LevelDevider = 100;
   const int MaxLevel = 9;
   const int NoConnectionLevel = 950;

@@ -1,7 +1,6 @@
 #ifndef PUMPER_DIPLAY_H
 #define PUMPER_DIPLAY_H
 
-#include "HumiditySensor.h"
 #include "Observer.h"
 #include "Common.h"
 #include "Time.h"
@@ -11,16 +10,12 @@
 
 class Display: public ILinkableObserver {
 public:
-  Display(Time * _time)
+  Display()
     : m_lcd(0x3f,16,2)   /* Задаем адрес и размерность дисплея. */
-    , m_time(_time)
-  {}
-
-  void setup() {
-    m_lcd.init();
-    m_lcd.noBacklight();
+  {
+    _setup();
   }
-  
+
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
     switch (reason) {
       case HSValue: {
@@ -30,12 +25,14 @@ public:
       }
       case PWorkStarted: {
         m_lcd.setCursor(8, 0);
-        m_lcd.print(m_time->getTimeStr());
+        m_lcd.print(m_lastTime);
         break;
       }
       case TimeUpdated: {
+        Time * time = (Time *)value;
         m_lcd.setCursor(8, 1);
-        m_lcd.print(m_time->getTimeStr());
+        m_lastTime = time->getTimeStr();
+        m_lcd.print(m_lastTime);
         break;
       }
       case HSLevelChanged: {
@@ -45,8 +42,12 @@ public:
     }
   }
 private:
-  Time * m_time;
+  void _setup() {
+    m_lcd.init();
+    m_lcd.noBacklight();
+  }
   LiquidCrystal_I2C m_lcd;
+  String m_lastTime;
 };
 
 #endif // PUMPER_DIPLAY_H
