@@ -47,39 +47,39 @@ void enterSleep(void) {
   power_all_enable();
 }
 
-const uint8_t HS0Power = 8;
-const uint8_t HS1Power = 9;
-const uint8_t HS0Analog = A3;
-const uint8_t HS1Analog = A2;
+const uint8_t HS0PowerPin = 8;
+const uint8_t HS1PowerPin = 9;
+const uint8_t HS0AnalogPin = A3;
+const uint8_t HS1AnalogPin = A2;
 const uint8_t HSDefaultLevel = 7;
 
-const int P1Power = 2;
-const int P2Power = 3;
+const int P1PowerPin = 2;
+const int P2PowerPin = 3;
 
 const int BP1Pin = 6;
 const int BP2Pin = 7;
 const int BP3Pin = 10;
 const int BP4Pin = 11;
 
-const int LightPower = 13;
+const int LightPowerPin = 13;
 
 const uint8_t memory[] = {
-  E_Ticker,                                               // 0
-  E_HumiditySensor, HS0Power, HS0Analog, HSDefaultLevel,  // 1
-  E_HumiditySensor, HS1Power, HS1Analog, HSDefaultLevel,  // 2
-  E_Display,                                              // 3
-  E_Pump, P1Power,                                        // 4
-  E_Pump, P2Power,                                        // 5
-  E_Time,                                                 // 6
-  E_Alarm, 7, 0, 0, MorningStarted,                       // 7
-  E_Alarm, 9, 30, 0, MorningStopped,                      // 8
-  E_Alarm, 17, 0, 0, EveningStarted,                      // 9
-  E_Alarm, 23, 0, 0, EveningStopped,                      // 10
-  E_Button, BP1Pin,                           // 11
-  E_Button, BP2Pin,                             // 12
-  E_Button, BP3Pin,                           // 13
-  E_Button, BP4Pin,                             // 14
-  E_Light, LightPower,                                    // 15
+  E_Ticker,                                                     // 0
+  E_HumiditySensor, HS0PowerPin, HS0AnalogPin, HSDefaultLevel,  // 1
+  E_HumiditySensor, HS1PowerPin, HS1AnalogPin, HSDefaultLevel,  // 2
+  E_Display,                                                    // 3
+  E_Pump, P1PowerPin,                                           // 4
+  E_Pump, P2PowerPin,                                           // 5
+  E_Time,                                                       // 6
+  E_Alarm, 7, 0, 0,                                             // 7
+  E_Alarm, 9, 30, 0,                                            // 8
+  E_Alarm, 17, 0, 0,                                            // 9
+  E_Alarm, 23, 0, 0,                                            // 10
+  E_Button, BP1Pin,                                             // 11
+  E_Button, BP2Pin,                                             // 12
+  E_Button, BP3Pin,                                             // 13
+  E_Button, BP4Pin,                                             // 14
+  E_Light, LightPowerPin,                                       // 15
   E_Link, 0, 1, Tick, 0, //    Linker::instance()->addLink(&MainTicker, &Sensors[0], Tick);
   E_Link, 0, 2, Tick, 0, //    Linker::instance()->addLink(&MainTicker, &Sensors[1], Tick);
   E_Link, 1, 3, HSValue, 0, //    Linker::instance()->addLink(&Sensors[0], &MainDisplay, HSValue, 0);
@@ -108,10 +108,10 @@ const uint8_t memory[] = {
   E_Link, 0, 12, Tick, 0, //  Linker::instance()->addLink(&MainTicker, &ButtonUp0, Tick);
   E_Link, 0, 13, Tick, 0, //  Linker::instance()->addLink(&MainTicker, &ButtonDown1, Tick);
   E_Link, 0, 14, Tick, 0, //  Linker::instance()->addLink(&MainTicker, &ButtonUp1, Tick);
-  E_Link, 7, 15, MorningStarted, 0, //  Linker::instance()->addLink(&MorningStartAlarm, &MainLight, MorningStarted);
-  E_Link, 8, 15, MorningStopped, 0, //  Linker::instance()->addLink(&MorningStopAlarm, &MainLight, MorningStopped);
-  E_Link, 9, 15, EveningStarted, 0, //  Linker::instance()->addLink(&EveningStartAlarm, &MainLight, EveningStarted);
-  E_Link, 10, 15, EveningStopped, 0, //  Linker::instance()->addLink(&EveningStopAlarm, &MainLight, EveningStopped);
+  E_Link, 7, 15, AlarmOccured, MorningStarted, //  Linker::instance()->addLink(&MorningStartAlarm, &MainLight, MorningStarted);
+  E_Link, 8, 15, AlarmOccured, MorningStopped, //  Linker::instance()->addLink(&MorningStopAlarm, &MainLight, MorningStopped);
+  E_Link, 9, 15, AlarmOccured, EveningStarted, //  Linker::instance()->addLink(&EveningStartAlarm, &MainLight, EveningStarted);
+  E_Link, 10, 15, AlarmOccured, EveningStopped, //  Linker::instance()->addLink(&EveningStopAlarm, &MainLight, EveningStopped);
 };
 
 Buffer buffer(memory, sizeof(memory));

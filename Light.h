@@ -15,7 +15,10 @@ public:
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
-    switch (reason) {
+    if (reason != AlarmOccured) {
+      return;
+    }
+    switch (additionalData) {
       case MorningStarted:
       case EveningStarted: {
         digitalWrite(m_powerPin, ON);

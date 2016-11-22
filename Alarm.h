@@ -12,7 +12,6 @@ public:
     buffer.read(m_hour);
     buffer.read(m_minute);
     buffer.read(m_second);
-    buffer.read(m_command);
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
@@ -36,13 +35,12 @@ public:
       return;
     }
     m_activated = true;
-    notify(m_command);
+    notify(AlarmOccured);
   }
 private:
   uint8_t m_hour;
   uint8_t m_minute;
   uint8_t m_second;
-  uint8_t m_command;
   bool m_activated;
 };
 

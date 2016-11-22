@@ -13,6 +13,7 @@ enum {
   ButtonUp,
   ButtonDown,
   TimeUpdated,
+  AlarmOccured,
   MorningStarted,
   MorningStopped,
   EveningStarted,
