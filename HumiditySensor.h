@@ -9,7 +9,7 @@ const long HSCheckDelay = 30000 / LoopDelay; // 30s
 
 const int MeasuremensCount = 3;
 
-class HumiditySensor: public ILinkableObserver, public ILinkableSubject {
+class HumiditySensor: public ILinkableObserver, public ILinkableSubject, public ISerializable {
   class Measuremens {
   public:
     Measuremens()
@@ -51,7 +51,16 @@ public:
     buffer.read(m_powerPin);
     buffer.read(m_analogPin);
     buffer.read(m_level);
+    uint8_t emty_data;
+    buffer.read(emty_data);
     _setup();
+  }
+
+  void store(Buffer & buffer) {
+    buffer.write(m_powerPin);
+    buffer.write(m_analogPin);
+    buffer.write(m_level);
+    buffer.write(m_measurements.average());
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {

@@ -4,14 +4,20 @@
 #include "Common.h"
 #include "Observer.h"
 
-class Light: public ILinkableObserver {
+class Light: public ILinkableObserver, public ISerializable {
 public:
   const int ON = HIGH;
   const int OFF = LOW;
     
   Light(Buffer & buffer) {
     buffer.read(m_powerPin);
+    buffer.read(m_state);
     _setup();
+  }
+
+  void store(Buffer & buffer) {
+    buffer.write(m_powerPin);
+    buffer.write(m_state);
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
@@ -20,16 +26,15 @@ public:
     }
     switch (additionalData) {
       case MorningStarted:
-      case EveningStarted: {
-        digitalWrite(m_powerPin, ON);
+      case EveningStarted:
+        m_state = ON;
         break;
-      }
       case MorningStopped:
-      case EveningStopped: {
-        digitalWrite(m_powerPin, OFF);
+      case EveningStopped:
+        m_state = OFF;
         break;
-      }
     }
+    digitalWrite(m_powerPin, m_state);
   }
 private:
   void _setup() {
@@ -37,6 +42,7 @@ private:
     digitalWrite(m_powerPin, OFF);
   }
   uint8_t m_powerPin;
+  uint8_t m_state;
 };
 
 #endif PUMPER_LIGHT_H

@@ -9,17 +9,23 @@ const long PumpTicks = 40000 / LoopDelay; // 40s
 const long WaitTicks = 3600000 / LoopDelay; // 1h
 const long MaxWorkingTime = 10L * 60L * 1000L / LoopDelay; // 10m
 
-class Pump: public ILinkableObserver, public ILinkableSubject {
+class Pump: public ILinkableObserver, public ILinkableSubject, public ISerializable {
 public:
-  const int ON = LOW;
-  const int OFF = HIGH;
+  const uint8_t ON = LOW;
+  const uint8_t OFF = HIGH;
 
   Pump(Buffer & buffer)
     : m_waitTicks(0)
-    , m_pumping(false)
+    , m_state(OFF)
   {
     buffer.read(m_powerPin);
+    buffer.read(m_state);
     _setup();
+  }
+
+  void store(Buffer & buffer) {
+    buffer.write(m_powerPin);
+    buffer.write(m_state);
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
@@ -42,18 +48,15 @@ public:
 private:
   void _setup() {
     pinMode(m_powerPin, OUTPUT);
-    digitalWrite(m_powerPin, OFF);
+    digitalWrite(m_powerPin, m_state);
   }
 
   void _startWork() {
-    if (m_waitTicks > 0) {
+    if ((m_waitTicks > 0) || (m_state == ON)) {
       return;
     }
-    if (m_pumping == true) {
-      return;
-    }
-    m_pumping = true;
-    digitalWrite(m_powerPin, ON);
+    m_state = ON;
+    digitalWrite(m_powerPin, m_state);
     notify(PWorkStarted, 0);
   }
 
@@ -64,18 +67,18 @@ private:
   }
 
   void _stopWork() {
-    if (m_pumping == false) {
+    if (m_state == OFF) {
       return;
     }
-    m_pumping = false;
-    digitalWrite(m_powerPin, OFF);
+    m_state = OFF;
+    digitalWrite(m_powerPin, m_state);
     notify(PWorkStopped);
     m_waitTicks = WaitTicks;
   }
 
   uint8_t m_powerPin;
   int m_waitTicks;
-  bool m_pumping;
+  uint8_t m_state;
 };
 
 #endif // PUMPER_PUMP_H

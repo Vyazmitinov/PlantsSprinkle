@@ -4,11 +4,15 @@
 #include "Common.h"
 #include "Observer.h"
 
-class Button: public ILinkableObserver, public ILinkableSubject {
+class Button: public ILinkableObserver, public ILinkableSubject, public ISerializable {
 public:
   Button(Buffer & buffer) {
     buffer.read(m_buttonPin);
     _setup();
+  }
+
+  virtual void store(Buffer & buffer) {
+    buffer.write(m_buttonPin);
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {

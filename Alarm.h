@@ -4,7 +4,7 @@
 #include "Observer.h"
 #include "Common.h"
 
-class Alarm: public ILinkableObserver, public ILinkableSubject {
+class Alarm: public ILinkableObserver, public ILinkableSubject, public ISerializable {
 public:
   Alarm(Buffer & buffer)
     : m_activated(false)
@@ -12,6 +12,12 @@ public:
     buffer.read(m_hour);
     buffer.read(m_minute);
     buffer.read(m_second);
+  }
+
+  virtual void store(Buffer & buffer) {
+    buffer.write(m_hour);
+    buffer.write(m_minute);
+    buffer.write(m_second);
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {

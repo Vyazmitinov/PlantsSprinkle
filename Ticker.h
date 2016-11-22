@@ -3,8 +3,9 @@
 
 #include "Observer.h"
 
-class Ticker: public ILinkableSubject {
+class Ticker: public ILinkableSubject, public ISerializable {
 public:
+  virtual void store(Buffer & buffer) {}
   void tick() {
     notify(Tick);
   }

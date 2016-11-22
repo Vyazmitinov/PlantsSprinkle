@@ -65,11 +65,11 @@ const int LightPowerPin = 13;
 
 const uint8_t memory[] = {
   E_Ticker,                                                     // 0
-  E_HumiditySensor, HS0PowerPin, HS0AnalogPin, HSDefaultLevel,  // 1
-  E_HumiditySensor, HS1PowerPin, HS1AnalogPin, HSDefaultLevel,  // 2
+  E_HumiditySensor, HS0PowerPin, HS0AnalogPin, HSDefaultLevel, 0,  // 1
+  E_HumiditySensor, HS1PowerPin, HS1AnalogPin, HSDefaultLevel, 0,  // 2
   E_Display,                                                    // 3
-  E_Pump, P1PowerPin,                                           // 4
-  E_Pump, P2PowerPin,                                           // 5
+  E_Pump, P1PowerPin, HIGH,                                     // 4
+  E_Pump, P2PowerPin, HIGH,                                     // 5
   E_Time,                                                       // 6
   E_Alarm, 7, 0, 0,                                             // 7
   E_Alarm, 9, 30, 0,                                            // 8
@@ -79,7 +79,7 @@ const uint8_t memory[] = {
   E_Button, BP2Pin,                                             // 12
   E_Button, BP3Pin,                                             // 13
   E_Button, BP4Pin,                                             // 14
-  E_Light, LightPowerPin,                                       // 15
+  E_Light, LightPowerPin, 0,                                    // 15
   E_Link, 0, 1, Tick, 0, //    Linker::instance()->addLink(&MainTicker, &Sensors[0], Tick);
   E_Link, 0, 2, Tick, 0, //    Linker::instance()->addLink(&MainTicker, &Sensors[1], Tick);
   E_Link, 1, 3, HSValue, 0, //    Linker::instance()->addLink(&Sensors[0], &MainDisplay, HSValue, 0);

@@ -25,6 +25,13 @@ public:
     return sizeof(T);
   }
 
+  template<typename T>
+  uint8_t write(const T & data) {
+    *(T*)(m_memory + m_pos) = data;
+    m_pos += sizeof(T);
+    return sizeof(T);
+  }
+
   int left() {
     return m_size - m_pos;
   }
@@ -32,6 +39,11 @@ private:
   const uint8_t *m_memory;
   int m_size;
   int m_pos;
+};
+
+class ISerializable {
+public:
+  virtual void store(Buffer & buffer) = 0;
 };
 
 #endif PUMPER_BUFFER_H

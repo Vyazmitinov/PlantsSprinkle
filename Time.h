@@ -6,13 +6,16 @@
 #include "Observer.h"
 #include "Common.h"
 
-class Time: public ILinkableObserver, public ILinkableSubject {
+class Time: public ILinkableObserver, public ILinkableSubject, public ISerializable {
   public:
     Time() 
       : m_time(RTC_DS3231)
     {
       _setup();
     }
+
+    virtual void store(Buffer & buffer) {}
+
     virtual void update(uint8_t reason, int value, uint8_t additionalData) {
       if (reason != Tick) {
         return;
