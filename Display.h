@@ -1,14 +1,14 @@
 #ifndef PUMPER_DIPLAY_H
 #define PUMPER_DIPLAY_H
 
-#include "Observer.h"
+#include "Linker.h"
 #include "Common.h"
 #include "Time.h"
 
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h> 
 
-class Display: public ILinkableObserver, public ISerializable {
+class Display: public ILinkable {
 public:
   Display()
     : m_lcd(0x3f,16,2)   /* Задаем адрес и размерность дисплея. */

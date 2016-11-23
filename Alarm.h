@@ -1,10 +1,10 @@
 #ifndef PUMPER_ALARM_H
 #define PUMPER_ALARM_H
 
-#include "Observer.h"
+#include "Linker.h"
 #include "Common.h"
 
-class Alarm: public ILinkableObserver, public ILinkableSubject, public ISerializable {
+class Alarm: public ILinkable {
 public:
   Alarm(Buffer & buffer)
     : m_activated(false)

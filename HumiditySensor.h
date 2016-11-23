@@ -2,7 +2,7 @@
 #define PUMPER_HUMIDITY_SENSOR_H
 
 #include "Common.h"
-#include "Observer.h"
+#include "Linker.h"
 #include "Buffer.h"
 
 const long HSCheckPumpingDelay = 10000 / LoopDelay; // 10s
@@ -10,7 +10,7 @@ const long HSCheckDelay = 30000 / LoopDelay; // 30s
 
 const int MeasuremensCount = 3;
 
-class HumiditySensor: public ILinkableObserver, public ILinkableSubject, public ISerializable {
+class HumiditySensor: public ILinkable {
   class Measuremens {
   public:
     Measuremens()

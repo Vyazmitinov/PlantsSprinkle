@@ -1,14 +1,15 @@
 #ifndef PUMPER_TICKER_H
 #define PUMPER_TICKER_H
 
-#include "Observer.h"
+#include "Linker.h"
 
-class Ticker: public ILinkableSubject, public ISerializable {
+class Ticker: public ILinkable {
 public:
   virtual void store(Buffer & buffer) {}
   void tick() {
     notify(Tick);
   }
+  virtual void update(uint8_t commad, int data, uint8_t additionalData) {}
 };
 
 #endif // PUMPER_TICKER_H

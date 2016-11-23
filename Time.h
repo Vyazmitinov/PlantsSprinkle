@@ -3,10 +3,10 @@
 
 #include <iarduino_RTC.h>
 
-#include "Observer.h"
+#include "Linker.h"
 #include "Common.h"
 
-class Time: public ILinkableObserver, public ILinkableSubject, public ISerializable {
+class Time: public ILinkable {
   public:
     Time() 
       : m_time(RTC_DS3231)

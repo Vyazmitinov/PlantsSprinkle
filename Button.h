@@ -2,9 +2,9 @@
 #define PUMPER_BUTTON_H
 
 #include "Common.h"
-#include "Observer.h"
+#include "Linker.h"
 
-class Button: public ILinkableObserver, public ILinkableSubject, public ISerializable {
+class Button: public ILinkable {
 public:
   Button(Buffer & buffer) {
     buffer.read(m_buttonPin);

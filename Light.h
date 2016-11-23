@@ -2,9 +2,9 @@
 #define PUMPER_LIGHT_H
 
 #include "Common.h"
-#include "Observer.h"
+#include "Linker.h"
 
-class Light: public ILinkableObserver, public ISerializable {
+class Light: public ILinkable {
 public:
   const int ON = HIGH;
   const int OFF = LOW;

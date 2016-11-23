@@ -4,13 +4,9 @@
 #include "Array.h"
 #include "Buffer.h"
 
-class ILinkableObserver {
+class ILinkable: public ISerializable {
 public:
   virtual void update(uint8_t commad, int data, uint8_t additionalData) = 0;
-};
-
-class ILinkableSubject {
-public:
   void notify(uint8_t command, int data = 0) const;
 };
 
@@ -48,7 +44,7 @@ public:
     m_links.push_back(Link{senderId, receiverId, command, additionalData});
   }
 
-  void notify(const ILinkableSubject * sender, uint8_t command, int data) const {
+  void notify(const ILinkable * sender, uint8_t command, int data) const {
     uint8_t senderId = 0;
     if (!_findSenderId(sender, senderId)) {
       return;
@@ -57,7 +53,7 @@ public:
     for (uint8_t i = 0; i < m_links.size(); ++i) {
       const Link & link = m_links[i];
       if ((link.senderId == senderId) && (link.command == command)) {
-        ILinkableObserver * observer = (ILinkableObserver *)m_objects[link.receiverId];
+        ILinkable * observer = m_objects[link.receiverId];
         observer->update(command, data, link.additionalData);
       }
     }
@@ -65,7 +61,7 @@ public:
 
 private:
   Linker() {}
-  bool _findSenderId(void * sender, uint8_t & senderId) {
+  bool _findSenderId(ILinkable * sender, uint8_t & senderId) {
     for (uint8_t i = 0; i < m_objects.size(); ++i) {
       if (sender == m_objects[i]) {
         senderId = i;
@@ -76,10 +72,10 @@ private:
   }
 
   array<Link, 64> m_links;
-  array<ISerializable *, 32> m_objects;
+  array<ILinkable *, 32> m_objects;
 };
 
-void ILinkableSubject::notify(uint8_t command, int data) const {
+void ILinkable::notify(uint8_t command, int data) const {
   Linker::instance()->notify(this, command, data);
 }
 

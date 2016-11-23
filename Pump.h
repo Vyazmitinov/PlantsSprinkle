@@ -1,7 +1,7 @@
 #ifndef PUMPER_PUMP_H
 #define PUMPER_PUMP_H
 
-#include "Observer.h"
+#include "Linker.h"
 #include "Common.h"
 
 const long PumpTicks = 40000 / LoopDelay; // 40s
@@ -9,7 +9,7 @@ const long PumpTicks = 40000 / LoopDelay; // 40s
 const long WaitTicks = 3600000 / LoopDelay; // 1h
 const long MaxWorkingTime = 10L * 60L * 1000L / LoopDelay; // 10m
 
-class Pump: public ILinkableObserver, public ILinkableSubject, public ISerializable {
+class Pump: public ILinkable {
 public:
   const uint8_t ON = LOW;
   const uint8_t OFF = HIGH;
