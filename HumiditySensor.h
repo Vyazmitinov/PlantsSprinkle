@@ -5,6 +5,7 @@
 #include "Observer.h"
 #include "Buffer.h"
 
+const long HSCheckPumpingDelay = 10000 / LoopDelay; // 10s
 const long HSCheckDelay = 30000 / LoopDelay; // 30s
 
 const int MeasuremensCount = 3;
@@ -65,12 +66,12 @@ public:
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
     if (reason == Tick) {
-      tick();
+      _tick();
     } else if (reason == ButtonPushed) {
       if (additionalData == ButtonUp) {
-        levelUp();
+        _levelUp();
       } else if (additionalData == ButtonDown) {
-        levelDown();
+        _levelDown();
       }
     }
   }
@@ -84,38 +85,49 @@ private:
   const int LevelDevider = 100;
   const int MaxLevel = 9;
   const int NoConnectionLevel = 950;
-  void processData(int data) {
+
+  inline bool _isDry(uint8_t avg) const {
+    return avg >= m_level;
+  }
+
+  inline bool _isWet(uint8_t avg) const {
+    return avg < m_level - 1;
+  }
+
+  void _processData(int data) {
     if (data > NoConnectionLevel) {
       data = 0;
     }
     m_measurements.add(data/LevelDevider);
     int avg = m_measurements.average();
-    if (avg < m_level - 1) {
+    if (_isWet(avg)) {
       notify(HSWet, avg);
-    } else if (avg >= m_level) {
+    } else if (_isDry(avg)) {
       notify(HSDry, avg);
     }
     notify(HSValue, avg);
   }
-  void tick() {
+  void _tick() {
     if (m_checkDelay == 0) {
       digitalWrite(m_powerPin, HIGH);
     } else if (m_checkDelay == 1) {
-      processData(analogRead(m_analogPin));
+      _processData(analogRead(m_analogPin));
       digitalWrite(m_powerPin, LOW);
     }
-    if (++m_checkDelay == HSCheckDelay) {
+    if (((++m_checkDelay == HSCheckPumpingDelay) && _isDry(m_measurements.average()))
+      || (++m_checkDelay == HSCheckDelay))
+    {
       m_checkDelay = 0;
     }
     return;
   }
-  void levelDown() {
+  void _levelDown() {
     if (m_level > 0) {
       --m_level;
     }
     notify(HSLevelChanged, m_level);
   }
-  void levelUp() {
+  void _levelUp() {
     if (m_level < MaxLevel) {
       ++m_level;
     }
