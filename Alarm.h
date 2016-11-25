@@ -21,7 +21,7 @@ public:
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
-    if (reason != TimeUpdated) {
+    if (reason != kTimeUpdated) {
       return;
     }
     Time * time = (Time *)value;
@@ -41,7 +41,7 @@ public:
       return;
     }
     m_activated = true;
-    notify(AlarmOccured);
+    notify(kAlarmOccured);
   }
 private:
   uint8_t m_hour;

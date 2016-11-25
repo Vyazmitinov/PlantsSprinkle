@@ -40,7 +40,7 @@ public:
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
-    if (reason != TimeUpdated) {
+    if (reason != kTimeUpdated) {
       return;
     }
     Time * time = (Time *)value;
@@ -52,15 +52,15 @@ public:
 
     SimpleTime stime{time->hour(), time->minute()};
 
-    uint8_t newState = LightOff;
+    uint8_t newState = kLightOff;
     if (stime < m_beforeSunrise) {
-      newState = LightOff;
+      newState = kLightOff;
     } else if (stime < m_sunrise) {
-      newState = LightOn;
+      newState = kLightOn;
     } else if (stime < m_sunset) {
-      newState = LightOff;
+      newState = kLightOff;
     } else if (stime < m_afterSunset) {
-      newState = LightOn;
+      newState = kLightOn;
     }
 
     if (newState != m_state) {

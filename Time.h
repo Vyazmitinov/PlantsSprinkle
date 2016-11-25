@@ -17,7 +17,7 @@ class Time: public ILinkable {
     virtual void store(Buffer & buffer) {}
 
     virtual void update(uint8_t reason, int value, uint8_t additionalData) {
-      if (reason != Tick) {
+      if (reason != kTick) {
         return;
       }
       
@@ -36,7 +36,7 @@ class Time: public ILinkable {
       m_month = m_time.month;
       m_day = m_time.day;
 
-      notify(TimeUpdated, this);
+      notify(kTimeUpdated, this);
     }
     const String & getTimeStr() const { return m_time_str; }
     

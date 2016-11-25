@@ -30,15 +30,15 @@ public:
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
     switch (reason) {
-      case Tick: {
+      case kTick: {
         _work();
         break;
       }
-      case HSDry: {
+      case kHSDry: {
         _startWork();
         break;
       }
-      case HSWet: {
+      case kHSWet: {
         _stopWork();
         break;
       }
@@ -57,7 +57,7 @@ private:
     }
     m_state = ON;
     digitalWrite(m_powerPin, m_state);
-    notify(PWorkStarted, 0);
+    notify(kPWorkStarted, 0);
   }
 
   void _work() {
@@ -72,7 +72,7 @@ private:
     }
     m_state = OFF;
     digitalWrite(m_powerPin, m_state);
-    notify(PWorkStopped);
+    notify(kPWorkStopped);
     m_waitTicks = WaitTicks;
   }
 

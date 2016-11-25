@@ -22,10 +22,10 @@ public:
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
     switch (reason) {
-      case LightOn:
+      case kLightOn:
         m_state = ON;
         break;
-      case LightOff:
+      case kLightOff:
         m_state = OFF;
         break;
       default:

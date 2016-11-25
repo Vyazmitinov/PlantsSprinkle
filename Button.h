@@ -16,9 +16,9 @@ public:
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
-    if (reason == Tick) {
+    if (reason == kTick) {
       if (digitalRead(m_buttonPin) == 1) {
-        notify(ButtonPushed, 0);
+        notify(kButtonPushed, 0);
       }
     }
   }

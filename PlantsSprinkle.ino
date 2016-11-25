@@ -64,55 +64,64 @@ const int BP4Pin = 11;
 
 const int LightPowerPin = 13;
 
+enum Objects {
+  kTikerObj,
+  kHSObj0,
+  kHSObj1,
+  kDisplayObj,
+  kPumpObj0,
+  kPumpObj1,
+  kTimeObj,
+  kButtonObj0,
+  kButtonObj1,
+  kButtonObj2,
+  kButtonObj3,
+  kLightObj,
+  kSunAlarmObj
+};
+
 const uint8_t memory[] = {
-  E_Ticker,                                                     // 0
-  E_HumiditySensor, HS0PowerPin, HS0AnalogPin, HSDefaultLevel, 0,  // 1
-  E_HumiditySensor, HS1PowerPin, HS1AnalogPin, HSDefaultLevel, 0,  // 2
-  E_Display,                                                    // 3
-  E_Pump, P1PowerPin, HIGH,                                     // 4
-  E_Pump, P2PowerPin, HIGH,                                     // 5
-  E_Time,                                                       // 6
-  E_Alarm, 7, 0, 0,                                             // 7
-  E_Alarm, 9, 30, 0,                                            // 8
-  E_Alarm, 17, 0, 0,                                            // 9
-  E_Alarm, 23, 0, 0,                                            // 10
-  E_Button, BP1Pin,                                             // 11
-  E_Button, BP2Pin,                                             // 12
-  E_Button, BP3Pin,                                             // 13
-  E_Button, BP4Pin,                                             // 14
-  E_Light, LightPowerPin, 0,                                    // 15
-  E_SunAlarm, 7, 111, 222, 165, 66, 25, 42, 92, 66, 0,          // 16
-  E_Link, 0, 1, Tick, 0, //    Linker::instance()->addLink(&MainTicker, &Sensors[0], Tick);
-  E_Link, 0, 2, Tick, 0, //    Linker::instance()->addLink(&MainTicker, &Sensors[1], Tick);
-  E_Link, 1, 3, HSValue, 0, //    Linker::instance()->addLink(&Sensors[0], &MainDisplay, HSValue, 0);
-  E_Link, 2, 3, HSValue, 1, //    Linker::instance()->addLink(&Sensors[1], &MainDisplay, HSValue, 1);
-  E_Link, 1, 3, HSLevelChanged, 0, //    Linker::instance()->addLink(&Sensors[0], &MainDisplay, HSLevelChanged, 0);
-  E_Link, 2, 3, HSLevelChanged, 1, //    Linker::instance()->addLink(&Sensors[1], &MainDisplay, HSLevelChanged, 1);
-  E_Link, 0, 4, Tick, 0, //    Linker::instance()->addLink(&MainTicker, &Pumps[0], Tick);
-  E_Link, 0, 5, Tick, 0, //    Linker::instance()->addLink(&MainTicker, &Pumps[1], Tick);
-  E_Link, 4, 3, PWorkStarted, 0, //    Linker::instance()->addLink(&Pumps[0], &MainDisplay, PWorkStarted, 0);
-  E_Link, 5, 3, PWorkStarted, 1, //    Linker::instance()->addLink(&Pumps[1], &MainDisplay, PWorkStarted, 1);
-  E_Link, 1, 4, HSDry, 0, //  Linker::instance()->addLink(&Sensors[0], &Pumps[0], HSDry);
-  E_Link, 1, 4, HSWet, 0, //  Linker::instance()->addLink(&Sensors[0], &Pumps[0], HSWet);
-  E_Link, 2, 5, HSDry, 0, //  Linker::instance()->addLink(&Sensors[1], &Pumps[1], HSDry);
-  E_Link, 2, 5, HSWet, 0, //  Linker::instance()->addLink(&Sensors[1], &Pumps[1], HSWet);
-  E_Link, 0, 6, Tick, 0, //  Linker::instance()->addLink(&MainTicker, &MainTime, Tick);
-  E_Link, 6, 3, TimeUpdated, 0, //  Linker::instance()->addLink(&MainTime, &MainDisplay, TimeUpdated);
-  E_Link, 6, 7, TimeUpdated, 0, //  Linker::instance()->addLink(&MainTime, &MorningStartAlarm, TimeUpdated);
-  E_Link, 6, 8, TimeUpdated, 0, //  Linker::instance()->addLink(&MainTime, &MorningStopAlarm, TimeUpdated);
-  E_Link, 6, 9, TimeUpdated, 0, //  Linker::instance()->addLink(&MainTime, &EveningStartAlarm, TimeUpdated);
-  E_Link, 6, 10, TimeUpdated, 0, //  Linker::instance()->addLink(&MainTime, &EveningStopAlarm, TimeUpdated);
-  E_Link, 11, 1, ButtonPushed, ButtonDown, //  Linker::instance()->addLink(&ButtonDown0, &Sensors[0], ButtonDown);
-  E_Link, 12, 1, ButtonPushed, ButtonUp, //  Linker::instance()->addLink(&ButtonUp0, &Sensors[0], ButtonUp);
-  E_Link, 13, 2, ButtonPushed, ButtonDown, //  Linker::instance()->addLink(&ButtonDown1, &Sensors[1], ButtonDown);
-  E_Link, 14, 2, ButtonPushed, ButtonUp, //  Linker::instance()->addLink(&ButtonUp1, &Sensors[1], ButtonUp);
-  E_Link, 0, 11, Tick, 0, //  Linker::instance()->addLink(&MainTicker, &ButtonDown0, Tick);
-  E_Link, 0, 12, Tick, 0, //  Linker::instance()->addLink(&MainTicker, &ButtonUp0, Tick);
-  E_Link, 0, 13, Tick, 0, //  Linker::instance()->addLink(&MainTicker, &ButtonDown1, Tick);
-  E_Link, 0, 14, Tick, 0, //  Linker::instance()->addLink(&MainTicker, &ButtonUp1, Tick);
-  E_Link, 6, 16, TimeUpdated, 0,
-  E_Link, 16, 15, LightOn, 0,
-  E_Link, 16, 15, LightOff, 0,
+  kTicker,
+  kHumiditySensor, HS0PowerPin, HS0AnalogPin, HSDefaultLevel, 0,
+  kHumiditySensor, HS1PowerPin, HS1AnalogPin, HSDefaultLevel, 0,
+  kDisplay,
+  kPump, P1PowerPin, HIGH,
+  kPump, P2PowerPin, HIGH,
+  kTime,
+  kButton, BP1Pin,
+  kButton, BP2Pin,
+  kButton, BP3Pin,
+  kButton, BP4Pin,
+  kLight, LightPowerPin, 0,
+  kSunAlarm, 7, 111, 222, 165, 66, 25, 42, 92, 66, 0,
+  
+  kLink, kTikerObj,     kHSObj0,      kTick,           0,
+  kLink, kTikerObj,     kHSObj1,      kTick,           0,
+  kLink, kHSObj0,       kDisplayObj,  kHSValue,        0,
+  kLink, kHSObj1,       kDisplayObj,  kHSValue,        1,
+  kLink, kHSObj0,       kDisplayObj,  kHSLevelChanged, 0,
+  kLink, kHSObj1,       kDisplayObj,  kHSLevelChanged, 1,
+  kLink, kTikerObj,     kPumpObj0,    kTick,           0,
+  kLink, kTikerObj,     kPumpObj1,    kTick,           0,
+  kLink, kPumpObj0,     kDisplayObj,  kPWorkStarted,   0,
+  kLink, kPumpObj1,     kDisplayObj,  kPWorkStarted,   1,
+  kLink, kHSObj0,       kPumpObj0,    kHSDry,          0,
+  kLink, kHSObj0,       kPumpObj0,    kHSWet,          0,
+  kLink, kHSObj1,       kPumpObj1,    kHSDry,          0,
+  kLink, kHSObj1,       kPumpObj1,    kHSWet,          0,
+  kLink, kTikerObj,     kTimeObj,     kTick,           0,
+  kLink, kTimeObj,      kDisplayObj,  kTimeUpdated,    0,
+  kLink, kButtonObj0,   kHSObj0,      kButtonPushed,   kButtonDown,
+  kLink, kButtonObj1,   kHSObj0,      kButtonPushed,   kButtonUp,
+  kLink, kButtonObj2,   kHSObj1,      kButtonPushed,   kButtonDown,
+  kLink, kButtonObj3,   kHSObj1,      kButtonPushed,   kButtonUp,
+  kLink, kTikerObj,     kButtonObj0,  kTick,           0,
+  kLink, kTikerObj,     kButtonObj1,  kTick,           0,
+  kLink, kTikerObj,     kButtonObj2,  kTick,           0,
+  kLink, kTikerObj,     kButtonObj3,  kTick,           0,
+  kLink, kTimeObj,      kSunAlarmObj, kTimeUpdated,    0,
+  kLink, kSunAlarmObj,  kLightObj,    kLightOn,        0,
+  kLink, kSunAlarmObj,  kLightObj,    kLightOff,       0,
 };
 
 Buffer buffer(memory, sizeof(memory));
@@ -120,51 +129,51 @@ Buffer buffer(memory, sizeof(memory));
 Ticker * MainTicker = NULL;
 
 void setup() {
-//  Serial.begin(9600);
+  Serial.begin(9600);
 
   Linker * linker = Linker::instance();
   while (buffer.left()) {
     uint8_t type;
     buffer.read(type);
     switch(type) {
-      case E_Ticker: {
+      case kTicker: {
         MainTicker = new Ticker();
         linker->addObject(MainTicker);
         break;
       }
-      case E_HumiditySensor: {
+      case kHumiditySensor: {
         linker->addObject(new HumiditySensor(buffer));
         break;
       }
-      case E_Display: {
+      case kDisplay: {
         linker->addObject(new Display());
         break;
       }
-      case E_Pump: {
+      case kPump: {
         linker->addObject(new Pump(buffer));
         break;
       }
-      case E_Time: {
+      case kTime: {
         linker->addObject(new Time());
         break;
       }
-      case E_Alarm: {
+      case kAlarm: {
         linker->addObject(new Alarm(buffer));
         break;
       }
-      case E_Button: {
+      case kButton: {
         linker->addObject(new Button(buffer));
         break;
       }
-      case E_Light: {
+      case kLight: {
         linker->addObject(new Light(buffer));
         break;
       }
-      case E_SunAlarm: {
+      case kSunAlarm: {
         linker->addObject(new SunAlarm(buffer));
         break;
       }
-      case E_Link: {
+      case kLink: {
         uint8_t senderId;
         uint8_t receiverId;
         uint8_t command;

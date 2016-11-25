@@ -65,12 +65,12 @@ public:
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
-    if (reason == Tick) {
+    if (reason == kTick) {
       _tick();
-    } else if (reason == ButtonPushed) {
-      if (additionalData == ButtonUp) {
+    } else if (reason == kButtonPushed) {
+      if (additionalData == kButtonUp) {
         _levelUp();
-      } else if (additionalData == ButtonDown) {
+      } else if (additionalData == kButtonDown) {
         _levelDown();
       }
     }
@@ -101,11 +101,11 @@ private:
     m_measurements.add(data/LevelDevider);
     int avg = m_measurements.average();
     if (_isWet(avg)) {
-      notify(HSWet, avg);
+      notify(kHSWet, avg);
     } else if (_isDry(avg)) {
-      notify(HSDry, avg);
+      notify(kHSDry, avg);
     }
-    notify(HSValue, avg);
+    notify(kHSValue, avg);
   }
   void _tick() {
     if (m_checkDelay == 0) {
@@ -114,8 +114,9 @@ private:
       _processData(analogRead(m_analogPin));
       digitalWrite(m_powerPin, LOW);
     }
-    if (((++m_checkDelay == HSCheckPumpingDelay) && _isDry(m_measurements.average()))
-      || (++m_checkDelay == HSCheckDelay))
+    ++m_checkDelay;
+    if (((m_checkDelay == HSCheckPumpingDelay) && _isDry(m_measurements.average()))
+      || (m_checkDelay == HSCheckDelay))
     {
       m_checkDelay = 0;
     }
@@ -125,13 +126,13 @@ private:
     if (m_level > 0) {
       --m_level;
     }
-    notify(HSLevelChanged, m_level);
+    notify(kHSLevelChanged, m_level);
   }
   void _levelUp() {
     if (m_level < MaxLevel) {
       ++m_level;
     }
-    notify(HSLevelChanged, m_level);
+    notify(kHSLevelChanged, m_level);
   }
 
   uint8_t m_powerPin;

@@ -7,7 +7,7 @@ class Ticker: public ILinkable {
 public:
   virtual void store(Buffer & buffer) {}
   void tick() {
-    notify(Tick);
+    notify(kTick);
   }
   virtual void update(uint8_t commad, int data, uint8_t additionalData) {}
 };

@@ -20,24 +20,24 @@ public:
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
     switch (reason) {
-      case HSValue: {
+      case kHSValue: {
         m_lcd.setCursor(0, additionalData);
         m_lcd.print(value);
         break;
       }
-      case PWorkStarted: {
+      case kPWorkStarted: {
         m_lcd.setCursor(8, 0);
         m_lcd.print(m_lastTime);
         break;
       }
-      case TimeUpdated: {
+      case kTimeUpdated: {
         Time * time = (Time *)value;
         m_lcd.setCursor(8, 1);
         m_lastTime = time->getTimeStr();
         m_lcd.print(m_lastTime);
         break;
       }
-      case HSLevelChanged: {
+      case kHSLevelChanged: {
         m_lcd.setCursor(2, additionalData);
         m_lcd.print(value);
       }
