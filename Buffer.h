@@ -27,7 +27,7 @@ public:
 
   template<typename T>
   uint8_t write(const T & data) {
-    *(T*)(m_memory + m_pos) = data;
+    *((T*)(m_memory + m_pos)) = data;
     m_pos += sizeof(T);
     return sizeof(T);
   }

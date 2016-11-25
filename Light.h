@@ -21,18 +21,15 @@ public:
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
-    if (reason != AlarmOccured) {
-      return;
-    }
-    switch (additionalData) {
-      case MorningStarted:
-      case EveningStarted:
+    switch (reason) {
+      case LightOn:
         m_state = ON;
         break;
-      case MorningStopped:
-      case EveningStopped:
+      case LightOff:
         m_state = OFF;
         break;
+      default:
+        return;
     }
     digitalWrite(m_powerPin, m_state);
   }

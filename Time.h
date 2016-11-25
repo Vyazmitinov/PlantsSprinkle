@@ -23,21 +23,30 @@ class Time: public ILinkable {
       
       m_time_str = m_time.gettime("H:i:s");
       m_time.gettime();
-      
+
       if ((m_second == m_time.seconds) && (m_minute == m_time.minutes) && (m_hour == m_time.Hours)) {
         return;
       }
-      
+
       m_hour = m_time.Hours;
       m_minute = m_time.minutes;
       m_second = m_time.seconds;
 
+      m_year = m_time.year;
+      m_month = m_time.month;
+      m_day = m_time.day;
+
       notify(TimeUpdated, this);
     }
     const String & getTimeStr() const { return m_time_str; }
-    uint8_t hour() const { return m_hour; }
-    uint8_t minute() const { return m_minute; }
-    uint8_t second() const { return m_second; }
+    
+    inline uint8_t hour() const { return m_hour; }
+    inline uint8_t minute() const { return m_minute; }
+    inline uint8_t second() const { return m_second; }
+    
+    inline uint8_t year() const { return m_year; }
+    inline uint8_t day() const { return m_day; }
+    inline uint8_t month() const { return m_month; }
   private:
     void _setup() {
       m_time.begin();
@@ -47,6 +56,9 @@ class Time: public ILinkable {
     uint8_t m_hour;
     uint8_t m_minute;
     uint8_t m_second;
+    uint8_t m_year;
+    uint8_t m_month;
+    uint8_t m_day;
     iarduino_RTC m_time;
 };
 

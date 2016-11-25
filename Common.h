@@ -17,7 +17,9 @@ enum {
   MorningStarted,
   MorningStopped,
   EveningStarted,
-  EveningStopped
+  EveningStopped,
+  LightOff,
+  LightOn
 };
 
 enum ObjectType {
@@ -30,7 +32,8 @@ enum ObjectType {
   E_Time,
   E_Alarm,
   E_Button,
-  E_Light
+  E_Light,
+  E_SunAlarm
 };
 
 const long LoopDelay = 600; // 0.6 s

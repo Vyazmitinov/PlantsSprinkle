@@ -10,6 +10,7 @@
 #include "Button.h"
 #include "Ticker.h"
 #include "Buffer.h"
+#include "SunAlarm.h"
 
 volatile int f_timer=0;
 
@@ -80,6 +81,7 @@ const uint8_t memory[] = {
   E_Button, BP3Pin,                                             // 13
   E_Button, BP4Pin,                                             // 14
   E_Light, LightPowerPin, 0,                                    // 15
+  E_SunAlarm, 7, 111, 222, 165, 66, 25, 42, 92, 66, 0,          // 16
   E_Link, 0, 1, Tick, 0, //    Linker::instance()->addLink(&MainTicker, &Sensors[0], Tick);
   E_Link, 0, 2, Tick, 0, //    Linker::instance()->addLink(&MainTicker, &Sensors[1], Tick);
   E_Link, 1, 3, HSValue, 0, //    Linker::instance()->addLink(&Sensors[0], &MainDisplay, HSValue, 0);
@@ -108,10 +110,9 @@ const uint8_t memory[] = {
   E_Link, 0, 12, Tick, 0, //  Linker::instance()->addLink(&MainTicker, &ButtonUp0, Tick);
   E_Link, 0, 13, Tick, 0, //  Linker::instance()->addLink(&MainTicker, &ButtonDown1, Tick);
   E_Link, 0, 14, Tick, 0, //  Linker::instance()->addLink(&MainTicker, &ButtonUp1, Tick);
-  E_Link, 7, 15, AlarmOccured, MorningStarted, //  Linker::instance()->addLink(&MorningStartAlarm, &MainLight, MorningStarted);
-  E_Link, 8, 15, AlarmOccured, MorningStopped, //  Linker::instance()->addLink(&MorningStopAlarm, &MainLight, MorningStopped);
-  E_Link, 9, 15, AlarmOccured, EveningStarted, //  Linker::instance()->addLink(&EveningStartAlarm, &MainLight, EveningStarted);
-  E_Link, 10, 15, AlarmOccured, EveningStopped, //  Linker::instance()->addLink(&EveningStopAlarm, &MainLight, EveningStopped);
+  E_Link, 6, 16, TimeUpdated, 0,
+  E_Link, 16, 15, LightOn, 0,
+  E_Link, 16, 15, LightOff, 0,
 };
 
 Buffer buffer(memory, sizeof(memory));
@@ -157,6 +158,10 @@ void setup() {
       }
       case E_Light: {
         linker->addObject(new Light(buffer));
+        break;
+      }
+      case E_SunAlarm: {
+        linker->addObject(new SunAlarm(buffer));
         break;
       }
       case E_Link: {
