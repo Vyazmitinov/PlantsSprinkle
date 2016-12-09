@@ -1,22 +1,24 @@
 #ifndef PUMPER_DIPLAY_H
 #define PUMPER_DIPLAY_H
 
-#include "Linker.h"
+#include "IObject.h"
 #include "Common.h"
 #include "Time.h"
 
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h> 
 
-class Display: public ILinkable {
+class Display: public IObject {
 public:
-  Display()
+  const uint8_t type = kDisplay;
+
+  Display(VirtualBuffer &)
     : m_lcd(0x3f,16,2)   /* Задаем адрес и размерность дисплея. */
   {
     _setup();
   }
 
-  virtual void store(Buffer & buffer) {}
+  uint8_t getType() {return kDisplay;}
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
     switch (reason) {
@@ -46,7 +48,7 @@ public:
 private:
   void _setup() {
     m_lcd.init();
-    m_lcd.noBacklight();
+    m_lcd.backlight();
   }
   LiquidCrystal_I2C m_lcd;
   String m_lastTime;

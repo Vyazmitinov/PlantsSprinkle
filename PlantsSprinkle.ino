@@ -1,16 +1,11 @@
 #include <avr/sleep.h>
 #include <avr/power.h>
 
-#include "HumiditySensor.h"
+#include <EEPROM.h>
+
 #include "Common.h"
-#include "Display.h"
-#include "Alarm.h"
-#include "Light.h"
-#include "Pump.h"
-#include "Button.h"
+#include "Linker.h"
 #include "Ticker.h"
-#include "Buffer.h"
-#include "SunAlarm.h"
 
 volatile int f_timer=0;
 
@@ -54,15 +49,15 @@ const uint8_t HS0AnalogPin = A3;
 const uint8_t HS1AnalogPin = A2;
 const uint8_t HSDefaultLevel = 7;
 
-const int P1PowerPin = 2;
-const int P2PowerPin = 3;
+const int P0PowerPin = 2;
 
-const int BP1Pin = 6;
-const int BP2Pin = 7;
-const int BP3Pin = 10;
-const int BP4Pin = 11;
+const int BP0Pin = 6;
+const int BP1Pin = 7;
+const int BP2Pin = 10;
+const int BP3Pin = 11;
 
-const int LightPowerPin = 13;
+const int Light0PowerPin = 3;
+const int Light1PowerPin = 4;
 
 enum Objects {
   kTikerObj,
@@ -70,125 +65,83 @@ enum Objects {
   kHSObj1,
   kDisplayObj,
   kPumpObj0,
-  kPumpObj1,
   kTimeObj,
   kButtonObj0,
   kButtonObj1,
   kButtonObj2,
   kButtonObj3,
-  kLightObj,
-  kSunAlarmObj
+  kLightObj0,
+  kLightObj1,
+  kSunAlarmObj,
+  kSerializerObj
 };
 
-const uint8_t memory[] = {
-  kTicker,
-  kHumiditySensor, HS0PowerPin, HS0AnalogPin, HSDefaultLevel, 0,
-  kHumiditySensor, HS1PowerPin, HS1AnalogPin, HSDefaultLevel, 0,
-  kDisplay,
-  kPump, P1PowerPin, HIGH,
-  kPump, P2PowerPin, HIGH,
-  kTime,
-  kButton, BP1Pin,
-  kButton, BP2Pin,
-  kButton, BP3Pin,
-  kButton, BP4Pin,
-  kLight, LightPowerPin, 0,
-  kSunAlarm, 7, 111, 222, 165, 66, 25, 42, 92, 66, 0,
-  
-  kLink, kTikerObj,     kHSObj0,      kTick,           0,
-  kLink, kTikerObj,     kHSObj1,      kTick,           0,
-  kLink, kHSObj0,       kDisplayObj,  kHSValue,        0,
-  kLink, kHSObj1,       kDisplayObj,  kHSValue,        1,
-  kLink, kHSObj0,       kDisplayObj,  kHSLevelChanged, 0,
-  kLink, kHSObj1,       kDisplayObj,  kHSLevelChanged, 1,
-  kLink, kTikerObj,     kPumpObj0,    kTick,           0,
-  kLink, kTikerObj,     kPumpObj1,    kTick,           0,
-  kLink, kPumpObj0,     kDisplayObj,  kPWorkStarted,   0,
-  kLink, kPumpObj1,     kDisplayObj,  kPWorkStarted,   1,
-  kLink, kHSObj0,       kPumpObj0,    kHSDry,          0,
-  kLink, kHSObj0,       kPumpObj0,    kHSWet,          0,
-  kLink, kHSObj1,       kPumpObj1,    kHSDry,          0,
-  kLink, kHSObj1,       kPumpObj1,    kHSWet,          0,
-  kLink, kTikerObj,     kTimeObj,     kTick,           0,
-  kLink, kTimeObj,      kDisplayObj,  kTimeUpdated,    0,
-  kLink, kButtonObj0,   kHSObj0,      kButtonPushed,   kButtonDown,
-  kLink, kButtonObj1,   kHSObj0,      kButtonPushed,   kButtonUp,
-  kLink, kButtonObj2,   kHSObj1,      kButtonPushed,   kButtonDown,
-  kLink, kButtonObj3,   kHSObj1,      kButtonPushed,   kButtonUp,
-  kLink, kTikerObj,     kButtonObj0,  kTick,           0,
-  kLink, kTikerObj,     kButtonObj1,  kTick,           0,
-  kLink, kTikerObj,     kButtonObj2,  kTick,           0,
-  kLink, kTikerObj,     kButtonObj3,  kTick,           0,
-  kLink, kTimeObj,      kSunAlarmObj, kTimeUpdated,    0,
-  kLink, kSunAlarmObj,  kLightObj,    kLightOn,        0,
-  kLink, kSunAlarmObj,  kLightObj,    kLightOff,       0,
-};
-
-Buffer buffer(memory, sizeof(memory));
+//const uint8_t memory[] = {
+//  kTicker,
+//  kHumiditySensor, HS0PowerPin, HS0AnalogPin, HSDefaultLevel, 0,
+//  kHumiditySensor, HS1PowerPin, HS1AnalogPin, HSDefaultLevel, 0,
+//  kDisplay,
+//  kPump, P0PowerPin, HIGH,
+//  kTime,
+//  kButton, BP0Pin,
+//  kButton, BP1Pin,
+//  kButton, BP2Pin,
+//  kButton, BP3Pin,
+//  kLight, Light0PowerPin, 0,
+//  kLight, Light1PowerPin, 0,
+//  kSunAlarm, 7, 111, 222, 165, 66, 25, 42, 92, 66, 0,
+//  kSerializer,
+//  
+//  kLink, kTikerObj,     kHSObj0,        0,
+//  kLink, kTikerObj,     kHSObj1,        0,
+//  kLink, kHSObj0,       kDisplayObj,    0,
+//  kLink, kHSObj1,       kDisplayObj,    1,
+//  kLink, kTikerObj,     kPumpObj0,      0,
+//  kLink, kPumpObj0,     kDisplayObj,    0,
+//  kLink, kHSObj0,       kPumpObj0,      0,
+//  kLink, kTikerObj,     kTimeObj,       0,
+//  kLink, kTimeObj,      kDisplayObj,    0,
+//  kLink, kButtonObj0,   kHSObj0,        kButtonDown,
+//  kLink, kButtonObj1,   kHSObj0,        kButtonUp,
+//  kLink, kButtonObj2,   kHSObj1,        kButtonDown,
+//  kLink, kButtonObj3,   kHSObj1,        kButtonUp,
+//  kLink, kTikerObj,     kButtonObj0,    0,
+//  kLink, kTikerObj,     kButtonObj1,    0,
+//  kLink, kTikerObj,     kButtonObj2,    0,
+//  kLink, kTikerObj,     kButtonObj3,    0,
+//  kLink, kTimeObj,      kSunAlarmObj,   0,
+//  kLink, kSunAlarmObj,  kLightObj0,     0,
+//  kLink, kSunAlarmObj,  kLightObj1,     0,
+//  kLink, kTikerObj,     kSerializerObj, 0,
+//  kLink, kHSObj0,       kSerializerObj, 0,
+//  kLink, kHSObj1,       kSerializerObj, 0,
+//};
+//
+//Buffer buffer(memory, sizeof(memory));
 
 Ticker * MainTicker = NULL;
 
 void setup() {
   Serial.begin(9600);
 
-  Linker * linker = Linker::instance();
-  while (buffer.left()) {
-    uint8_t type;
-    buffer.read(type);
-    switch(type) {
-      case kTicker: {
-        MainTicker = new Ticker();
-        linker->addObject(MainTicker);
-        break;
-      }
-      case kHumiditySensor: {
-        linker->addObject(new HumiditySensor(buffer));
-        break;
-      }
-      case kDisplay: {
-        linker->addObject(new Display());
-        break;
-      }
-      case kPump: {
-        linker->addObject(new Pump(buffer));
-        break;
-      }
-      case kTime: {
-        linker->addObject(new Time());
-        break;
-      }
-      case kAlarm: {
-        linker->addObject(new Alarm(buffer));
-        break;
-      }
-      case kButton: {
-        linker->addObject(new Button(buffer));
-        break;
-      }
-      case kLight: {
-        linker->addObject(new Light(buffer));
-        break;
-      }
-      case kSunAlarm: {
-        linker->addObject(new SunAlarm(buffer));
-        break;
-      }
-      case kLink: {
-        uint8_t senderId;
-        uint8_t receiverId;
-        uint8_t command;
-        uint8_t additionalData;
+  Size size;        
+  size.size_ch[0] = EEPROM.read(0);
+  size.size_ch[1] = EEPROM.read(1);
 
-        buffer.read(senderId);
-        buffer.read(receiverId);
-        buffer.read(command);
-        buffer.read(additionalData);
-
-        linker->addLink(senderId, receiverId, command, additionalData);
-        break;
-      }
-    }
+  uint8_t * memory = new uint8_t[size.size_int];
+  if (memory == 0) {
+    return;
   }
+
+  for (int i = 0 ; i < size.size_int; i++) {
+    memory[i] = EEPROM.read(i + 2);
+  }
+  Buffer buffer(memory, size.size_int);
+  Linker::instance()->load(buffer);
+
+  delete[] memory;
+  
+  MainTicker = Linker::instance()->getObject(kTikerObj);
 
   /*** Configure the timer. http://donalmorrissey.blogspot.ru/2011/11/sleeping-arduino-part-4-wake-up-via.html ***/
   TCCR1A = 0x00; /* Normal timer operation.*/

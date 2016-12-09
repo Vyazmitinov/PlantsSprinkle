@@ -1,23 +1,25 @@
 #ifndef PUMPER_LIGHT_H
 #define PUMPER_LIGHT_H
 
+#include "IObject.h"
 #include "Common.h"
-#include "Linker.h"
 
-class Light: public ILinkable {
+class Light: public IObject {
 public:
   const int ON = HIGH;
   const int OFF = LOW;
     
-  Light(Buffer & buffer) {
-    buffer.read(m_powerPin);
-    buffer.read(m_state);
+  Light(VirtualBuffer & buffer) {
+    buffer.read(&m_powerPin, sizeof(m_powerPin));
+    buffer.read(&m_state, sizeof(m_state));
     _setup();
   }
 
-  void store(Buffer & buffer) {
-    buffer.write(m_powerPin);
-    buffer.write(m_state);
+  uint8_t getType() {return kLight;}
+
+  void store(VirtualBuffer & buffer) {
+    buffer.write(&m_powerPin, sizeof(m_powerPin));
+    buffer.write(&m_state, sizeof(m_state));
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {

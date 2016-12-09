@@ -1,13 +1,13 @@
 #ifndef PUMPER_SUN_ALARM
 #define PUMPER_SUN_ALARM
 
-#include "Linker.h"
+#include "IObject.h"
 #include "Common.h"
 #include "SunTime.h"
 
-class SunAlarm: public ILinkable {
-  const uint8_t HoursBeforeSunrise = 2;
-  const uint8_t HoursAfterSunset = 5;
+class SunAlarm: public IObject {
+  const uint8_t HoursBeforeSunrise = 5;
+  const uint8_t HoursAfterSunset = 2;
 
   struct SimpleTime {
     uint8_t hour;
@@ -25,18 +25,20 @@ class SunAlarm: public ILinkable {
   };
 
 public:
-  SunAlarm(Buffer & buffer) {
-    buffer.read(m_timezone);
-    buffer.read(m_longitude);
-    buffer.read(m_latitude);
-    buffer.read(m_state);
+  SunAlarm(VirtualBuffer & buffer) {
+    buffer.read(&m_timezone, sizeof(m_timezone));
+    buffer.read(&m_longitude, sizeof(m_longitude));
+    buffer.read(&m_latitude, sizeof(m_latitude));
+    buffer.read(&m_state, sizeof(m_state));
   }
 
-  virtual void store(Buffer & buffer) {
-    buffer.write(m_timezone);
-    buffer.write(m_longitude);
-    buffer.write(m_latitude);
-    buffer.write(m_state);
+  uint8_t getType() {return kSunAlarm;}
+
+  virtual void store(VirtualBuffer & buffer) {
+    buffer.write(&m_timezone, sizeof(m_timezone));
+    buffer.write(&m_longitude, sizeof(m_longitude));
+    buffer.write(&m_latitude, sizeof(m_latitude));
+    buffer.write(&m_state, sizeof(m_state));
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
@@ -82,6 +84,10 @@ private:
     m_beforeSunrise.minute = getMinutes(sunriseTime);
     m_afterSunset.hour = sunsetTime + HoursAfterSunset;
     m_afterSunset.minute = getMinutes(sunsetTime);
+  }
+  
+  void notify(uint8_t command, int data = 0) const {
+    Linker::instance()->notify(this, command, data);
   }
 
   int8_t m_timezone;

@@ -1,7 +1,7 @@
 #ifndef PUMPER_COMMON_H
 #define PUMPER_COMMON_H
 
-enum {
+enum CommandType {
   kHSDry,
   kHSWet,
   kHSValue,
@@ -15,7 +15,8 @@ enum {
   kTimeUpdated,
   kAlarmOccured,
   kLightOff,
-  kLightOn
+  kLightOn,
+  kNeedToSerialize
 };
 
 enum ObjectType {
@@ -29,10 +30,16 @@ enum ObjectType {
   kAlarm,
   kButton,
   kLight,
-  kSunAlarm
+  kSunAlarm,
+  kSerializer
 };
 
 const long LoopDelay = 600; // 0.6 s
+
+union Size {
+  int size_int;
+  uint8_t size_ch[2];
+};
 
 #endif // PUMPER_COMMON_H
 

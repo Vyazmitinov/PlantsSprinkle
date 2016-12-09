@@ -1,20 +1,14 @@
-#ifndef PUMPER_OBSERVER_H
-#define PUMPER_OBSERVER_H
+#ifndef LINKER_H
+#define LINKER_H
 
+#include "ObjectFactory.h"
 #include "Array.h"
 #include "Buffer.h"
-
-class ILinkable: public ISerializable {
-public:
-  virtual void update(uint8_t commad, int data, uint8_t additionalData) = 0;
-  void notify(uint8_t command, int data = 0) const;
-};
 
 class Linker {
   struct Link {
     uint8_t senderId;
     uint8_t receiverId;
-    uint8_t command;
     uint8_t additionalData;
   } __attribute__((packed));
 
@@ -24,27 +18,56 @@ public:
     return & linker;
   }
 
-  void store(Buffer & buffer) {
+  void store(VirtualBuffer & buffer) const {
+    uint8_t type;
     for (uint8_t i = 0; i < m_objects.size(); ++i) {
+      type = m_objects[i]->getType();
+      buffer.write(&type, sizeof(type));
       m_objects[i]->store(buffer);
     }
+    type = kLink;
     for (uint8_t i = 0; i < m_links.size(); ++i) {
-      buffer.write(m_links[i].senderId);
-      buffer.write(m_links[i].receiverId);
-      buffer.write(m_links[i].command);
-      buffer.write(m_links[i].additionalData);
+      buffer.write(&type, sizeof(type));
+      buffer.write(&m_links[i].senderId, sizeof(m_links[i].senderId));
+      buffer.write(&m_links[i].receiverId, sizeof(m_links[i].receiverId));
+      buffer.write(&m_links[i].additionalData, sizeof(m_links[i].additionalData));
     }
   }
 
-  void addObject(ISerializable * object) {
+  void load(VirtualBuffer & buffer) {
+    while (buffer.left()) {
+      uint8_t type;
+      buffer.read(&type, sizeof(type));
+      if (type == kLink) {
+        uint8_t senderId;
+        uint8_t receiverId;
+        uint8_t additionalData;
+        buffer.read(&senderId, sizeof(senderId));
+        buffer.read(&receiverId, sizeof(receiverId));
+        buffer.read(&additionalData, sizeof(additionalData));
+        addLink(senderId, receiverId, additionalData);
+      } else {
+        IObject * obj = ObjectFactory::create(type, buffer);
+        if (obj != 0) {
+          addObject(obj);
+        }
+      }
+    }
+  }
+
+  void addObject(IObject * object) {
     m_objects.push_back(object);
   }
 
-  void addLink(uint8_t senderId, uint8_t receiverId, uint8_t command, uint8_t additionalData = 0) {
-    m_links.push_back(Link{senderId, receiverId, command, additionalData});
+  IObject * getObject(unsigned pos) {
+    return m_objects[pos];
   }
 
-  void notify(const ILinkable * sender, uint8_t command, int data) const {
+  void addLink(uint8_t senderId, uint8_t receiverId, uint8_t additionalData = 0) {
+    m_links.push_back(Link{senderId, receiverId, additionalData});
+  }
+
+  void notify(const IObject * sender, uint8_t command, int data = 0) const {
     uint8_t senderId = 0;
     if (!_findSenderId(sender, senderId)) {
       return;
@@ -52,8 +75,8 @@ public:
 
     for (uint8_t i = 0; i < m_links.size(); ++i) {
       const Link & link = m_links[i];
-      if ((link.senderId == senderId) && (link.command == command)) {
-        ILinkable * observer = m_objects[link.receiverId];
+      if (link.senderId == senderId) {
+        IObject * observer = m_objects[link.receiverId];
         observer->update(command, data, link.additionalData);
       }
     }
@@ -61,7 +84,7 @@ public:
 
 private:
   Linker() {}
-  bool _findSenderId(ILinkable * sender, uint8_t & senderId) {
+  bool _findSenderId(IObject * sender, uint8_t & senderId) {
     for (uint8_t i = 0; i < m_objects.size(); ++i) {
       if (sender == m_objects[i]) {
         senderId = i;
@@ -71,12 +94,8 @@ private:
     return false;
   }
 
-  array<Link, 64> m_links;
-  array<ILinkable *, 32> m_objects;
+  array<Link, 42> m_links;
+  array<IObject *, 16> m_objects;
 };
 
-void ILinkable::notify(uint8_t command, int data) const {
-  Linker::instance()->notify(this, command, data);
-}
-
-#endif PUMPER_OBSERVER_H
+#endif LINKER_H

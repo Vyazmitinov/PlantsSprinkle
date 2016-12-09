@@ -4,13 +4,14 @@
 #include "Common.h"
 #include "Linker.h"
 #include "Buffer.h"
+#include "Arduino.h"
 
 const long HSCheckPumpingDelay = 10000 / LoopDelay; // 10s
 const long HSCheckDelay = 30000 / LoopDelay; // 30s
 
 const int MeasuremensCount = 3;
 
-class HumiditySensor: public ILinkable {
+class HumiditySensor: public IObject {
   class Measuremens {
   public:
     Measuremens()
@@ -46,22 +47,25 @@ class HumiditySensor: public ILinkable {
     bool m_overfill;
   };
 public:
-  HumiditySensor(Buffer & buffer)
+  HumiditySensor(VirtualBuffer & buffer)
     : m_checkDelay(0)
+    , m_firstRun(true)
   {
-    buffer.read(m_powerPin);
-    buffer.read(m_analogPin);
-    buffer.read(m_level);
-    uint8_t emty_data;
-    buffer.read(emty_data);
+    buffer.read(&m_powerPin, sizeof(m_powerPin));
+    buffer.read(&m_analogPin, sizeof(m_analogPin));
+    buffer.read(&m_level, sizeof(m_level));
+    buffer.skip(sizeof(uint8_t));
     _setup();
   }
 
-  void store(Buffer & buffer) {
-    buffer.write(m_powerPin);
-    buffer.write(m_analogPin);
-    buffer.write(m_level);
-    buffer.write(m_measurements.average());
+  uint8_t getType() {return kHumiditySensor;}
+
+  void store(VirtualBuffer & buffer) {
+    buffer.write(&m_powerPin, sizeof(m_powerPin));
+    buffer.write(&m_analogPin, sizeof(m_analogPin));
+    buffer.write(&m_level, sizeof(m_level));
+    uint8_t avg = m_measurements.average();
+    buffer.write(&avg, sizeof(avg));
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
@@ -73,6 +77,7 @@ public:
       } else if (additionalData == kButtonDown) {
         _levelDown();
       }
+      notify(kNeedToSerialize);
     }
   }
 private:
@@ -108,6 +113,10 @@ private:
     notify(kHSValue, avg);
   }
   void _tick() {
+    if (m_firstRun) {
+      m_firstRun = false;
+      notify(kHSLevelChanged, m_level);
+    }
     if (m_checkDelay == 0) {
       digitalWrite(m_powerPin, HIGH);
     } else if (m_checkDelay == 1) {
@@ -134,12 +143,16 @@ private:
     }
     notify(kHSLevelChanged, m_level);
   }
+  void notify(uint8_t command, int data = 0) const {
+    Linker::instance()->notify(this, command, data);
+  }
 
   uint8_t m_powerPin;
   uint8_t m_analogPin;
   uint8_t m_level;
   Measuremens m_measurements;
   long m_checkDelay;
+  bool m_firstRun;
 };
 
 #endif PUMPER_HUMIDITY_SENSOR_H

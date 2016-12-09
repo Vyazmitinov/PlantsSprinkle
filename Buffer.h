@@ -1,49 +1,75 @@
 #ifndef PUMPER_BUFFER_H
 #define PUMPER_BUFFER_H
 
-class Buffer {
+#include <string.h>
+
+class VirtualBuffer {
 public:
-  Buffer(const uint8_t *memory, int size)
-    : m_memory(memory)
-    , m_size(size)
-    , m_pos(0)
+  VirtualBuffer()
+    : m_pos(0)
   {}
 
-  template<typename T>
-  uint8_t read(T & data) {
-    uint8_t looked = lookup(data);
+  virtual uint8_t read(void * data, uint8_t size) {
+    uint8_t looked = lookup(data, size);
     m_pos += looked;
     return looked;
   }
 
-  template<typename T>
-  uint8_t lookup(T & data) {
-    if (m_pos > m_size - sizeof(T)) {
-      return 0;
-    }
-    data = *(T*)(m_memory + m_pos);
-    return sizeof(T);
+  virtual uint8_t lookup(void * data, uint8_t size) {
+    return size;
   }
 
-  template<typename T>
-  uint8_t write(const T & data) {
-    *((T*)(m_memory + m_pos)) = data;
-    m_pos += sizeof(T);
-    return sizeof(T);
+  virtual uint8_t skip(uint8_t size) {
+    m_pos += size;
+    return size;
   }
 
-  int left() {
-    return m_size - m_pos;
+  virtual uint8_t write(void * data, uint8_t size) {
+    m_pos += size;
+    return size;
   }
-private:
-  const uint8_t *m_memory;
-  int m_size;
+
+  virtual int left() {return 0;}
+  virtual int size() {return m_pos;}
+
+protected:
   int m_pos;
 };
 
-class ISerializable {
+class Buffer: public VirtualBuffer {
 public:
-  virtual void store(Buffer & buffer) = 0;
+  Buffer(const uint8_t *memory, int capacity)
+    : m_memory(memory)
+    , m_capacity(capacity)
+  {}
+
+  virtual uint8_t lookup(void * data, uint8_t size) {
+    if (m_pos > m_capacity - size) {
+      return 0;
+    }
+    memcpy(data, m_memory + m_pos, size);
+    return size;
+  }
+
+  virtual uint8_t write(void * data, uint8_t size) {
+    if ((m_capacity - m_pos) < size) {
+      return 0;
+    }
+    memcpy(m_memory + m_pos, data, size);
+    m_pos += size;
+    return size;
+  }
+
+  virtual int left() {
+    return m_capacity - m_pos;
+  }
+
+  virtual int size() {
+    return m_pos;
+  }
+private:
+  const uint8_t *m_memory;
+  int m_capacity;
 };
 
 #endif PUMPER_BUFFER_H

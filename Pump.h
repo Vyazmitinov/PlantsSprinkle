@@ -1,7 +1,7 @@
 #ifndef PUMPER_PUMP_H
 #define PUMPER_PUMP_H
 
-#include "Linker.h"
+#include "IObject.h"
 #include "Common.h"
 
 const long PumpTicks = 40000 / LoopDelay; // 40s
@@ -9,23 +9,25 @@ const long PumpTicks = 40000 / LoopDelay; // 40s
 const long WaitTicks = 3600000 / LoopDelay; // 1h
 const long MaxWorkingTime = 10L * 60L * 1000L / LoopDelay; // 10m
 
-class Pump: public ILinkable {
+class Pump: public IObject {
 public:
-  const uint8_t ON = LOW;
-  const uint8_t OFF = HIGH;
+  const uint8_t ON = HIGH;
+  const uint8_t OFF = LOW;
 
-  Pump(Buffer & buffer)
+  Pump(VirtualBuffer & buffer)
     : m_waitTicks(0)
     , m_state(OFF)
   {
-    buffer.read(m_powerPin);
-    buffer.read(m_state);
+    buffer.read(&m_powerPin, sizeof(m_powerPin));
+    buffer.read(&m_state, sizeof(m_state));
     _setup();
   }
 
-  void store(Buffer & buffer) {
-    buffer.write(m_powerPin);
-    buffer.write(m_state);
+  uint8_t getType() {return kPump;}
+
+  void store(VirtualBuffer & buffer) {
+    buffer.write(&m_powerPin, sizeof(m_powerPin));
+    buffer.write(&m_state, sizeof(m_state));
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
@@ -57,7 +59,7 @@ private:
     }
     m_state = ON;
     digitalWrite(m_powerPin, m_state);
-    notify(kPWorkStarted, 0);
+    Linker::instance()->notify(this, kPWorkStarted);
   }
 
   void _work() {
@@ -72,7 +74,7 @@ private:
     }
     m_state = OFF;
     digitalWrite(m_powerPin, m_state);
-    notify(kPWorkStopped);
+    Linker::instance()->notify(this, kPWorkStopped);
     m_waitTicks = WaitTicks;
   }
 

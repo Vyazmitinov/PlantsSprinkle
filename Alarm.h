@@ -1,23 +1,25 @@
 #ifndef PUMPER_ALARM_H
 #define PUMPER_ALARM_H
 
-#include "Linker.h"
+#include "IObject.h"
 #include "Common.h"
 
-class Alarm: public ILinkable {
+class Alarm: public IObject {
 public:
-  Alarm(Buffer & buffer)
+  Alarm(VirtualBuffer & buffer)
     : m_activated(false)
   {
-    buffer.read(m_hour);
-    buffer.read(m_minute);
-    buffer.read(m_second);
+    buffer.read(&m_hour, sizeof(m_hour));
+    buffer.read(&m_minute, sizeof(m_minute));
+    buffer.read(&m_second, sizeof(m_second));
   }
 
-  virtual void store(Buffer & buffer) {
-    buffer.write(m_hour);
-    buffer.write(m_minute);
-    buffer.write(m_second);
+  uint8_t getType() {return kAlarm;}
+
+  virtual void store(VirtualBuffer & buffer) {
+    buffer.write(&m_hour, sizeof(m_hour));
+    buffer.write(&m_minute, sizeof(m_minute));
+    buffer.write(&m_second, sizeof(m_second));
   }
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
@@ -41,7 +43,7 @@ public:
       return;
     }
     m_activated = true;
-    notify(kAlarmOccured);
+    Linker::instance()->notify(this, kAlarmOccured);
   }
 private:
   uint8_t m_hour;
