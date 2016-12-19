@@ -32,5 +32,5 @@ private:
   T _data[N];
 } __attribute__((packed));
 
-#endif PUMPER_ARRAY_H
+#endif // PS_ARRAY_H
 

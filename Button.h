@@ -1,17 +1,17 @@
-#ifndef PUMPER_BUTTON_H
-#define PUMPER_BUTTON_H
+#ifndef PS_BUTTON_H
+#define PS_BUTTON_H
 
 #include "IObject.h"
 #include "Common.h"
 
 class Button: public IObject {
 public:
-  uint8_t getType() {return kButton;}
-
   Button(VirtualBuffer & buffer) {
     buffer.read(&m_buttonPin, sizeof(m_buttonPin));
     _setup();
   }
+
+  virtual uint8_t getType() const {return kButton;}
 
   virtual void store(VirtualBuffer & buffer) {
     buffer.write(&m_buttonPin, sizeof(m_buttonPin));
@@ -33,5 +33,5 @@ private:
   uint8_t m_buttonPin;
 };
 
-#endif // PUMPER_BUTTON_H
+#endif // PS_BUTTON_H
 

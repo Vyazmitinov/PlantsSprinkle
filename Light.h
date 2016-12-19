@@ -1,5 +1,5 @@
-#ifndef PUMPER_LIGHT_H
-#define PUMPER_LIGHT_H
+#ifndef PS_LIGHT_H
+#define PS_LIGHT_H
 
 #include "IObject.h"
 #include "Common.h"
@@ -15,9 +15,9 @@ public:
     _setup();
   }
 
-  uint8_t getType() {return kLight;}
+  uint8_t getType() const {return kLight;}
 
-  void store(VirtualBuffer & buffer) {
+  virtual void store(VirtualBuffer & buffer) {
     buffer.write(&m_powerPin, sizeof(m_powerPin));
     buffer.write(&m_state, sizeof(m_state));
   }
@@ -30,6 +30,14 @@ public:
       case kLightOff:
         m_state = OFF;
         break;
+      case kAlarmOccured: {
+        if (additionalData == kLightOn) {
+          m_state = ON;
+        } else {
+          m_state = OFF;
+        }
+        break;
+      }
       default:
         return;
     }
@@ -44,5 +52,5 @@ private:
   uint8_t m_state;
 };
 
-#endif PUMPER_LIGHT_H
+#endif // PS_LIGHT_H
 

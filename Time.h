@@ -1,32 +1,34 @@
-#ifndef PUMPER_TIME_H
-#define PUMPER_TIME_H
+#ifndef PS_TIME_H
+#define PS_TIME_H
 
 #include <iarduino_RTC.h>
 
 #include "IObject.h"
 #include "Common.h"
+#include "Linker.h"
 
 class Time: public IObject {
 public:
-  Time(VirtualBuffer &) 
+  Time(VirtualBuffer &)
     : m_time(RTC_DS3231)
   {
     _setup();
   }
 
-  uint8_t getType() {return kTime;}
+  virtual uint8_t getType() const {return kTime;}
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
     if (reason != kTick) {
       return;
     }
-      
-    m_time_str = m_time.gettime("H:i:s");
+
     m_time.gettime();
 
     if ((m_second == m_time.seconds) && (m_minute == m_time.minutes) && (m_hour == m_time.Hours)) {
       return;
     }
+
+    m_time_str = m_time.gettime((char*)"H:i:s");
 
     m_hour = m_time.Hours;
     m_minute = m_time.minutes;
@@ -36,14 +38,14 @@ public:
     m_month = m_time.month;
     m_day = m_time.day;
 
-    Linker::instance()->notify(this, kTimeUpdated);
+    Linker::instance()->notify(this, kTimeUpdated, reinterpret_cast<int>(this));
   }
   const String & getTimeStr() const { return m_time_str; }
-    
+
   inline uint8_t hour() const { return m_hour; }
   inline uint8_t minute() const { return m_minute; }
   inline uint8_t second() const { return m_second; }
-    
+
   inline uint8_t year() const { return m_year; }
   inline uint8_t day() const { return m_day; }
   inline uint8_t month() const { return m_month; }
@@ -62,5 +64,5 @@ private:
   iarduino_RTC m_time;
 };
 
-#endif // PUMPER_TIME_H
+#endif // PS_TIME_H
 

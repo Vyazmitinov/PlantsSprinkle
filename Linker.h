@@ -1,5 +1,5 @@
-#ifndef LINKER_H
-#define LINKER_H
+#ifndef PS_LINKER_H
+#define PS_LINKER_H
 
 #include "ObjectFactory.h"
 #include "Array.h"
@@ -7,6 +7,9 @@
 
 class Linker {
   struct Link {
+    Link(uint8_t _senderId = 0, uint8_t _receiverId = 0, uint8_t _additionalData = 0)
+        : senderId(_senderId), receiverId(_receiverId), additionalData(_additionalData)
+    {}
     uint8_t senderId;
     uint8_t receiverId;
     uint8_t additionalData;
@@ -64,7 +67,7 @@ public:
   }
 
   void addLink(uint8_t senderId, uint8_t receiverId, uint8_t additionalData = 0) {
-    m_links.push_back(Link{senderId, receiverId, additionalData});
+    m_links.push_back(Link(senderId, receiverId, additionalData));
   }
 
   void notify(const IObject * sender, uint8_t command, int data = 0) const {
@@ -84,7 +87,7 @@ public:
 
 private:
   Linker() {}
-  bool _findSenderId(IObject * sender, uint8_t & senderId) {
+  bool _findSenderId(const IObject * sender, uint8_t & senderId) const {
     for (uint8_t i = 0; i < m_objects.size(); ++i) {
       if (sender == m_objects[i]) {
         senderId = i;
@@ -98,4 +101,4 @@ private:
   array<IObject *, 16> m_objects;
 };
 
-#endif LINKER_H
+#endif // PS_LINKER_H

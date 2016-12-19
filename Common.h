@@ -34,12 +34,8 @@ enum ObjectType {
   kSerializer
 };
 
-const long LoopDelay = 600; // 0.6 s
-
-union Size {
-  int size_int;
-  uint8_t size_ch[2];
-};
+//const long LoopDelay = 600; // 0.6 s
+const long LoopDelay = 50; // 0.01 s
 
 #endif // PUMPER_COMMON_H
 

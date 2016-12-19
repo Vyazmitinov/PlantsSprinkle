@@ -1,5 +1,5 @@
-#ifndef PUMPER_DIPLAY_H
-#define PUMPER_DIPLAY_H
+#ifndef PS_DIPLAY_H
+#define PS_DIPLAY_H
 
 #include "IObject.h"
 #include "Common.h"
@@ -10,15 +10,13 @@
 
 class Display: public IObject {
 public:
-  const uint8_t type = kDisplay;
-
   Display(VirtualBuffer &)
     : m_lcd(0x3f,16,2)   /* Задаем адрес и размерность дисплея. */
   {
     _setup();
   }
 
-  uint8_t getType() {return kDisplay;}
+  virtual uint8_t getType() const {return kDisplay;}
 
   virtual void update(uint8_t reason, int value, uint8_t additionalData) {
     switch (reason) {
@@ -54,4 +52,4 @@ private:
   String m_lastTime;
 };
 
-#endif // PUMPER_DIPLAY_H
+#endif // PS_DIPLAY_H
