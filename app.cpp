@@ -1,49 +1,10 @@
-#include <avr/sleep.h>
-#include <avr/power.h>
-
 #include <EEPROM.h>
 #include <Arduino.h>
+#include <LowPower.h>
 
 #include "Common.h"
 #include "Linker.h"
 #include "Ticker.h"
-
-volatile int f_timer=0;
-
-ISR(TIMER1_OVF_vect) {
-  if(f_timer == 0) {
-    f_timer = 1;
-  }
-}
-
-void enterSleep(void) {
-  set_sleep_mode(SLEEP_MODE_IDLE);
-
-  //  TCNT1=0xDC00; // 1 sec
-  TCNT1=0xFE33; // 1/20 sec
-
-  sleep_enable();
-
-  /* Disable all of the unused peripherals. This will reduce power
-   * consumption further and, more importantly, some of these
-   * peripherals may generate interrupts that will wake our Arduino from
-   * sleep!
-   */
-  power_adc_disable();
-  power_spi_disable();
-  power_timer0_disable();
-  power_timer2_disable();
-  power_twi_disable();
-
-  /* Now enter sleep mode. */
-  sleep_mode();
-  
-  /* The program will continue from here after the timer timeout*/
-  sleep_disable(); /* First thing to do is disable sleep. */
-  
-  /* Re-enable the peripherals. */
-  power_all_enable();
-}
 
 const uint8_t HS0PowerPin = 8;
 const uint8_t HS1PowerPin = 9;
@@ -126,6 +87,16 @@ uint8_t memory[] = {
   kLink, kGarlandAlarmOff, kLightObj1,  kLightOff,
 };
 
+//uint8_t memory[] = {
+//  kTicker,
+//  kHumiditySensor, HS0PowerPin, HS0AnalogPin, HSDefaultLevel, 0,
+//  kPump, P0PowerPin, HIGH,
+
+//  kLink, kTikerObj,     kHSObj0,        0,
+//  kLink, kTikerObj,     kPumpObj0,      0,
+//  kLink, kHSObj0,       kPumpObj0,      0,
+//};
+
 Buffer buffer(memory, sizeof(memory));
 
 //const uint8_t memory[] = {
@@ -147,21 +118,13 @@ void setup() {
   Linker::instance()->load(buffer);
 
   MainTicker = reinterpret_cast<Ticker*>(Linker::instance()->getObject(kTikerObj));
-
-  /*** Configure the timer. http://donalmorrissey.blogspot.ru/2011/11/sleeping-arduino-part-4-wake-up-via.html ***/
-  TCCR1A = 0x00; /* Normal timer operation.*/
-  TCNT1=0xF600;
-  TCCR1B = 0x05;
-  TIMSK1=0x01;
 }
 
 void loop() {
-  if(f_timer==1) {
-    f_timer = 0;
-    
-    MainTicker->tick();
-    /* Re-enter sleep mode. */
-    enterSleep();
+  uint8_t rv = MainTicker->tick();
+  if (rv | kNeedShortDelay) {
+    LowPower.powerDown(SLEEP_15MS, ADC_OFF, BOD_OFF);
+  } else {
+    LowPower.powerDown(SLEEP_1S, ADC_OFF, BOD_OFF);
   }
 }
-
