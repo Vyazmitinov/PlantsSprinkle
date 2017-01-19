@@ -95,6 +95,7 @@ uint8_t HumiditySensor::_tick() {
     rv = notify(kHSLevelChanged, m_level);
   }
   if (m_checkDelay == 0) {
+    rv = kNeedShortDelay;
     digitalWrite(m_powerPin, HIGH);
   } else if (m_checkDelay == 1) {
     rv = _processData(analogRead(m_analogPin));

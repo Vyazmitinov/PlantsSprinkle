@@ -4,8 +4,8 @@
 #include "Common.h"
 #include "IObject.h"
 
-const long HSCheckPumpingDelay = 10000 / LoopDelay; // 10s
-const long HSCheckDelay = 30000 / LoopDelay; // 30s
+const long HSCheckPumpingDelay = 10000 / RegularLoopDelay; // 10s
+const long HSCheckDelay = 30000 / RegularLoopDelay; // 30s
 
 const int MeasuremensCount = 3;
 

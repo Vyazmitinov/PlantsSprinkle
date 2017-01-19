@@ -5,10 +5,10 @@
 #include "Common.h"
 #include <Arduino.h>
 
-const long PumpTicks = 40000 / LoopDelay; // 40s
+const long PumpTicks = 40000 / RegularLoopDelay; // 40s
 //const long WaitTicks = 43200000 / LoopDelay; // 12h
-const long WaitTicks = 3600000 / LoopDelay; // 1h
-const long MaxWorkingTime = 10L * 60L * 1000L / LoopDelay; // 10m
+const long WaitTicks = 3600000 / RegularLoopDelay; // 1h
+const long MaxWorkingTime = 10L * 60L * 1000L / RegularLoopDelay; // 10m
 
 class Pump: public IObject {
 public:

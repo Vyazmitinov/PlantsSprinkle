@@ -34,8 +34,12 @@ enum ObjectType {
   kSerializer
 };
 
-//const long LoopDelay = 600; // 0.6 s
-const long LoopDelay = 50; // 0.01 s
+enum TickEvent {
+  kNeedShortDelay = 1
+};
+
+const long ShortLoopDelay = 15; // SLEEP_15MS
+const long RegularLoopDelay = 1000; // SLEEP_1S
 
 #endif // PUMPER_COMMON_H
 
