@@ -16,9 +16,9 @@ void SunAlarm::store(VirtualBuffer &buffer) {
   buffer.write(&m_state, sizeof(m_state));
 }
 
-void SunAlarm::update(uint8_t reason, int value, uint8_t additionalData) {
+uint8_t SunAlarm::update(uint8_t reason, int value, uint8_t additionalData) {
   if (reason != kTimeUpdated) {
-    return;
+    return 0;
   }
   Time * time = (Time *)value;
   if (((time->hour() == 0) && (time->minute() == 0) && (time->second() == 0))
@@ -42,8 +42,9 @@ void SunAlarm::update(uint8_t reason, int value, uint8_t additionalData) {
 
   if (newState != m_state) {
     m_state = newState;
-    notify(m_state);
+    return notify(m_state);
   }
+  return 0;
 }
 
 void SunAlarm::_calcSunTimes(Time *time) {
@@ -61,6 +62,6 @@ void SunAlarm::_calcSunTimes(Time *time) {
   m_afterSunset.minute = getMinutes(sunsetTime);
 }
 
-void SunAlarm::notify(uint8_t command, int data) const {
-  Linker::instance()->notify(this, command, data);
+uint8_t SunAlarm::notify(uint8_t command, int data) const {
+  return Linker::instance()->notify(this, command, data);
 }

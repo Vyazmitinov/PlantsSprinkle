@@ -26,7 +26,7 @@ public:
 
   virtual uint8_t getType() const {return kHumiditySensor;}
   virtual void store(VirtualBuffer & buffer);
-  virtual void update(uint8_t reason, int value, uint8_t additionalData);
+  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData);
 
 private:
   static const int LevelDevider = 100;
@@ -42,11 +42,11 @@ private:
     return avg < m_level - 1;
   }
 
-  void _processData(int data);
-  void _tick();
-  void _levelDown();
-  void _levelUp();
-  void notify(uint8_t command, int data = 0) const;
+  uint8_t _processData(int data);
+  uint8_t _tick();
+  uint8_t _levelDown();
+  uint8_t _levelUp();
+  uint8_t notify(uint8_t command, int data = 0) const;
 
   uint8_t m_powerPin;
   uint8_t m_analogPin;

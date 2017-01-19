@@ -22,7 +22,7 @@ public:
     buffer.write(&m_state, sizeof(m_state));
   }
 
-  virtual void update(uint8_t reason, int value, uint8_t additionalData) {
+  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData) {
     switch (reason) {
       case kLightOn:
         m_state = ON;
@@ -39,9 +39,10 @@ public:
         break;
       }
       default:
-        return;
+        return 0;
     }
     digitalWrite(m_powerPin, m_state);
+    return 0;
   }
 private:
   void _setup() {

@@ -52,9 +52,9 @@ void HumiditySensor::store(VirtualBuffer &buffer) {
   buffer.write(&avg, sizeof(avg));
 }
 
-void HumiditySensor::update(uint8_t reason, int value, uint8_t additionalData) {
+uint8_t HumiditySensor::update(uint8_t reason, int value, uint8_t additionalData) {
   if (reason == kTick) {
-    _tick();
+    return _tick();
   } else if (reason == kButtonPushed) {
     if (additionalData == kButtonUp) {
       _levelUp();
@@ -63,6 +63,7 @@ void HumiditySensor::update(uint8_t reason, int value, uint8_t additionalData) {
     }
     notify(kNeedToSerialize);
   }
+  return 0;
 }
 
 void HumiditySensor::_setup() {
@@ -71,29 +72,32 @@ void HumiditySensor::_setup() {
   digitalWrite(m_powerPin, LOW);
 }
 
-void HumiditySensor::_processData(int data) {
+uint8_t HumiditySensor::_processData(int data) {
+  uint8_t rv = 0;
   if (data > NoConnectionLevel) {
     data = 0;
   }
   m_measurements.add(data/LevelDevider);
   int avg = m_measurements.average();
   if (_isWet(avg)) {
-    notify(kHSWet, avg);
+    rv |= notify(kHSWet, avg);
   } else if (_isDry(avg)) {
-    notify(kHSDry, avg);
+    rv |= notify(kHSDry, avg);
   }
-  notify(kHSValue, avg);
+  rv |= notify(kHSValue, avg);
+  return rv;
 }
 
-void HumiditySensor::_tick() {
+uint8_t HumiditySensor::_tick() {
+  uint8_t rv = 0;
   if (m_firstRun) {
     m_firstRun = false;
-    notify(kHSLevelChanged, m_level);
+    rv = notify(kHSLevelChanged, m_level);
   }
   if (m_checkDelay == 0) {
     digitalWrite(m_powerPin, HIGH);
   } else if (m_checkDelay == 1) {
-    _processData(analogRead(m_analogPin));
+    rv = _processData(analogRead(m_analogPin));
     digitalWrite(m_powerPin, LOW);
   }
   ++m_checkDelay;
@@ -102,23 +106,23 @@ void HumiditySensor::_tick() {
   {
     m_checkDelay = 0;
   }
-  return;
+  return rv;
 }
 
-void HumiditySensor::_levelDown() {
+uint8_t HumiditySensor::_levelDown() {
   if (m_level > 0) {
     --m_level;
   }
-  notify(kHSLevelChanged, m_level);
+  return notify(kHSLevelChanged, m_level);
 }
 
-void HumiditySensor::_levelUp() {
+uint8_t HumiditySensor::_levelUp() {
   if (m_level < MaxLevel) {
     ++m_level;
   }
-  notify(kHSLevelChanged, m_level);
+  return notify(kHSLevelChanged, m_level);
 }
 
-void HumiditySensor::notify(uint8_t command, int data) const {
-  Linker::instance()->notify(this, command, data);
+uint8_t HumiditySensor::notify(uint8_t command, int data) const {
+  return Linker::instance()->notify(this, command, data);
 }

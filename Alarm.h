@@ -10,7 +10,7 @@ public:
 
   virtual uint8_t getType() const {return kAlarm;}
   virtual void store(VirtualBuffer & buffer);
-  virtual void update(uint8_t reason, int value, uint8_t additionalData);
+  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData);
 
 private:
   uint8_t m_hour;

@@ -17,12 +17,13 @@ public:
     buffer.write(&m_buttonPin, sizeof(m_buttonPin));
   }
 
-  virtual void update(uint8_t reason, int value, uint8_t additionalData) {
+  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData) {
     if (reason == kTick) {
       if (digitalRead(m_buttonPin) == 1) {
-        Linker::instance()->notify(this, kButtonPushed);
+        return Linker::instance()->notify(this, kButtonPushed);
       }
     }
+    return 0;
   }
 
 private:

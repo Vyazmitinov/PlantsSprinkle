@@ -70,19 +70,19 @@ public:
     m_links.push_back(Link(senderId, receiverId, additionalData));
   }
 
-  void notify(const IObject * sender, uint8_t command, int data = 0) const {
+  uint8_t notify(const IObject * sender, uint8_t command, int data = 0) const {
+    uint8_t rv = 0;
     uint8_t senderId = 0;
-    if (!_findSenderId(sender, senderId)) {
-      return;
-    }
-
-    for (uint8_t i = 0; i < m_links.size(); ++i) {
-      const Link & link = m_links[i];
-      if (link.senderId == senderId) {
-        IObject * observer = m_objects[link.receiverId];
-        observer->update(command, data, link.additionalData);
+    if (_findSenderId(sender, senderId)) {
+      for (uint8_t i = 0; i < m_links.size(); ++i) {
+        const Link & link = m_links[i];
+        if (link.senderId == senderId) {
+          IObject * observer = m_objects[link.receiverId];
+          rv |= observer->update(command, data, link.additionalData);
+        }
       }
     }
+    return rv;
   }
 
 private:

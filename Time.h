@@ -17,15 +17,15 @@ public:
 
   virtual uint8_t getType() const {return kTime;}
 
-  virtual void update(uint8_t reason, int value, uint8_t additionalData) {
+  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData) {
     if (reason != kTick) {
-      return;
+      return 0;
     }
 
     m_time.gettime();
 
     if ((m_second == m_time.seconds) && (m_minute == m_time.minutes) && (m_hour == m_time.Hours)) {
-      return;
+      return 0;
     }
 
     m_time_str = m_time.gettime((char*)"H:i:s");
@@ -38,7 +38,7 @@ public:
     m_month = m_time.month;
     m_day = m_time.day;
 
-    Linker::instance()->notify(this, kTimeUpdated, reinterpret_cast<int>(this));
+    return Linker::instance()->notify(this, kTimeUpdated, reinterpret_cast<int>(this));
   }
   const String & getTimeStr() const { return m_time_str; }
 

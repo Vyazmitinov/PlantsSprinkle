@@ -29,11 +29,11 @@ public:
 
   virtual uint8_t getType() const {return kSunAlarm;}
   virtual void store(VirtualBuffer & buffer);
-  virtual void update(uint8_t reason, int value, uint8_t additionalData);
+  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData);
 
 private:
   void _calcSunTimes(Time * time);
-  void notify(uint8_t command, int data = 0) const;
+  uint8_t notify(uint8_t command, int data = 0) const;
 
   int8_t m_timezone;
   float m_longitude;

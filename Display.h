@@ -18,7 +18,7 @@ public:
 
   virtual uint8_t getType() const {return kDisplay;}
 
-  virtual void update(uint8_t reason, int value, uint8_t additionalData) {
+  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData) {
     switch (reason) {
       case kHSValue: {
         m_lcd.setCursor(0, additionalData);
@@ -42,6 +42,7 @@ public:
         m_lcd.print(value);
       }
     }
+    return 0;
   }
 private:
   void _setup() {

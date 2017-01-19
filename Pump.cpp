@@ -16,21 +16,16 @@ void Pump::store(VirtualBuffer &buffer) {
   buffer.write(&m_state, sizeof(m_state));
 }
 
-void Pump::update(uint8_t reason, int value, uint8_t additionalData) {
+uint8_t Pump::update(uint8_t reason, int value, uint8_t additionalData) {
   switch (reason) {
-  case kTick: {
-    _work();
-    break;
+    case kTick:
+      return _work();
+    case kHSDry:
+      return _startWork();
+    case kHSWet:
+      return _stopWork();
   }
-  case kHSDry: {
-    _startWork();
-    break;
-  }
-  case kHSWet: {
-    _stopWork();
-    break;
-  }
-  }
+  return 0;
 }
 
 void Pump::_setup() {
@@ -38,27 +33,28 @@ void Pump::_setup() {
   digitalWrite(m_powerPin, m_state);
 }
 
-void Pump::_startWork() {
+uint8_t Pump::_startWork() {
   if ((m_waitTicks > 0) || (m_state == ON)) {
-    return;
+    return 0;
   }
   m_state = ON;
   digitalWrite(m_powerPin, m_state);
-  Linker::instance()->notify(this, kPWorkStarted);
+  return Linker::instance()->notify(this, kPWorkStarted);
 }
 
-void Pump::_work() {
+uint8_t Pump::_work() {
   if (m_waitTicks > 0) {
     --m_waitTicks;
   }
+  return 0;
 }
 
-void Pump::_stopWork() {
+uint8_t Pump::_stopWork() {
   if (m_state == OFF) {
-    return;
+    return 0;
   }
   m_state = OFF;
   digitalWrite(m_powerPin, m_state);
-  Linker::instance()->notify(this, kPWorkStopped);
   m_waitTicks = WaitTicks;
+  return Linker::instance()->notify(this, kPWorkStopped);
 }

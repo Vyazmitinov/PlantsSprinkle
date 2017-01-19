@@ -1,17 +1,18 @@
 ARDUINO_DIR  = /usr/share/arduino
 
 TARGET       = main
-ARDUINO_LIBS = iarduino_RTC EEPROM LiquidCrystal_I2C Wire
+ARDUINO_LIBS = iarduino_RTC EEPROM LiquidCrystal_I2C Wire Low-Power-master
 
 USER_LIB_PATH = /home/sergey/Arduino/libraries
 
-MCU          = atmega328p
-F_CPU        = 16000000
+BOARD_TAG = pro328
+#MCU          = atmega328p
+#F_CPU        = 8000000
 CPPFLAGS    += -std=c++11
 
 # Avrdude code
-ARDUINO_PORT = /dev/ttyACM0
+ARDUINO_PORT = /dev/ttyUSB0
 AVRDUDE_ARD_PROGRAMMER = arduino
-AVRDUDE_ARD_BAUDRATE = 115200
+AVRDUDE_ARD_BAUDRATE = 57600
 
 include /usr/share/arduino/Arduino.mk

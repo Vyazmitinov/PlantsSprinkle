@@ -19,13 +19,13 @@ public:
 
   virtual uint8_t getType() const {return kPump;}
   virtual void store(VirtualBuffer & buffer);
-  virtual void update(uint8_t reason, int value, uint8_t additionalData);
+  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData);
 
 private:
   void _setup();
-  void _startWork();
-  void _work();
-  void _stopWork();
+  uint8_t _startWork();
+  uint8_t _work();
+  uint8_t _stopWork();
 
   uint8_t m_powerPin;
   long m_waitTicks;

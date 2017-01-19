@@ -14,7 +14,7 @@ public:
 
   uint8_t getType() const { return kSerializer; }
 
-  virtual void update(uint8_t reason, int value, uint8_t additionalData) {
+  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData) {
     switch (reason) {
     case kNeedToSerialize:
       Serial.println("needs to save");
@@ -30,6 +30,7 @@ public:
       _checkSerial();
     }
     }
+    return 0;
   }
 private:
   void _save() {
