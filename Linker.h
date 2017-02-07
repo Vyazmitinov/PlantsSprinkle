@@ -1,84 +1,57 @@
 #ifndef PS_LINKER_H
 #define PS_LINKER_H
 
-#include "ObjectFactory.h"
+#include "ObjectStore.h"
 #include "Array.h"
 #include "Buffer.h"
 
 class Linker {
   struct Link {
-    Link(uint8_t _senderId = 0, uint8_t _receiverId = 0, uint8_t _additionalData = 0)
-        : senderId(_senderId), receiverId(_receiverId), additionalData(_additionalData)
+    Link(uint8_t _senderId = 0, uint8_t _receiverId = 0, uint8_t _signal = 0, uint8_t _command = 0)
+        : senderId(_senderId), receiverId(_receiverId), signal(_signal), command(_command)
     {}
     uint8_t senderId;
     uint8_t receiverId;
-    uint8_t additionalData;
+    uint8_t signal;
+    uint8_t command;
   } __attribute__((packed));
 
 public:
-  static Linker * instance() {
-    static Linker linker;
-    return & linker;
+  Linker(ObjectStore * _store) : m_store(_store) {}
+
+  const ObjectStore * getStore() const {return m_store;}
+
+  void read(VirtualBuffer & buffer) {
+    while (buffer.left()) {
+      uint8_t senderId;
+      uint8_t receiverId;
+      uint8_t signal;
+      uint8_t command;
+      buffer.read(&senderId, sizeof(senderId));
+      buffer.read(&receiverId, sizeof(receiverId));
+      buffer.read(&signal, sizeof(signal));
+      buffer.read(&command, sizeof(command));
+      m_links.push_back(Link(senderId, receiverId, signal, command));
+    }
   }
 
-  void store(VirtualBuffer & buffer) const {
-    uint8_t type;
-    for (uint8_t i = 0; i < m_objects.size(); ++i) {
-      type = m_objects[i]->getType();
-      buffer.write(&type, sizeof(type));
-      m_objects[i]->store(buffer);
-    }
-    type = kLink;
+  void write(VirtualBuffer & buffer) const {
     for (uint8_t i = 0; i < m_links.size(); ++i) {
-      buffer.write(&type, sizeof(type));
       buffer.write(&m_links[i].senderId, sizeof(m_links[i].senderId));
       buffer.write(&m_links[i].receiverId, sizeof(m_links[i].receiverId));
-      buffer.write(&m_links[i].additionalData, sizeof(m_links[i].additionalData));
+      buffer.write(&m_links[i].signal, sizeof(m_links[i].signal));
+      buffer.write(&m_links[i].command, sizeof(m_links[i].command));
     }
   }
 
-  void load(VirtualBuffer & buffer) {
-    while (buffer.left()) {
-      uint8_t type;
-      buffer.read(&type, sizeof(type));
-      if (type == kLink) {
-        uint8_t senderId;
-        uint8_t receiverId;
-        uint8_t additionalData;
-        buffer.read(&senderId, sizeof(senderId));
-        buffer.read(&receiverId, sizeof(receiverId));
-        buffer.read(&additionalData, sizeof(additionalData));
-        addLink(senderId, receiverId, additionalData);
-      } else {
-        IObject * obj = ObjectFactory::create(type, buffer);
-        if (obj != 0) {
-          addObject(obj);
-        }
-      }
-    }
-  }
-
-  void addObject(IObject * object) {
-    m_objects.push_back(object);
-  }
-
-  IObject * getObject(unsigned pos) {
-    return m_objects[pos];
-  }
-
-  void addLink(uint8_t senderId, uint8_t receiverId, uint8_t additionalData = 0) {
-    m_links.push_back(Link(senderId, receiverId, additionalData));
-  }
-
-  uint8_t notify(const IObject * sender, uint8_t command, int data = 0) const {
+  uint8_t notify(uint8_t senderId, uint8_t signal, const void * data = nullptr) const {
     uint8_t rv = 0;
-    uint8_t senderId = 0;
-    if (_findSenderId(sender, senderId)) {
-      for (uint8_t i = 0; i < m_links.size(); ++i) {
-        const Link & link = m_links[i];
-        if (link.senderId == senderId) {
-          IObject * observer = m_objects[link.receiverId];
-          rv |= observer->update(command, data, link.additionalData);
+    for (uint8_t i = 0; i < m_links.size(); ++i) {
+      const Link & link = m_links[i];
+      if ((senderId == link.senderId) && (signal == link.signal)) {
+        IReceiver * observer = m_store->getObject(link.receiverId);
+        if (observer != nullptr) {
+          rv |= observer->update(this, link.command, data);
         }
       }
     }
@@ -86,19 +59,10 @@ public:
   }
 
 private:
-  Linker() {}
-  bool _findSenderId(const IObject * sender, uint8_t & senderId) const {
-    for (uint8_t i = 0; i < m_objects.size(); ++i) {
-      if (sender == m_objects[i]) {
-        senderId = i;
-        return true;
-      }
-    }
-    return false;
-  }
+  Linker() :m_store(nullptr) {}
 
-  array<Link, 42> m_links;
-  array<IObject *, 16> m_objects;
+  array<Link, 32> m_links;
+  ObjectStore * m_store;
 };
 
 #endif // PS_LINKER_H

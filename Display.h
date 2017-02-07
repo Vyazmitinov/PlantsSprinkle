@@ -1,16 +1,18 @@
-#ifndef PS_DIPLAY_H
-#define PS_DIPLAY_H
+#ifndef PS_DISPLAY_H
+#define PS_DISPLAY_H
 
-#include "IObject.h"
+#include "Object.h"
 #include "Common.h"
 #include "Time.h"
+
+#ifdef PS_DISPLAY
 
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h> 
 
-class Display: public IObject {
+class Display: public Object {
 public:
-  Display(VirtualBuffer &)
+  Display()
     : m_lcd(0x3f,16,2)   /* Задаем адрес и размерность дисплея. */
   {
     _setup();
@@ -18,28 +20,28 @@ public:
 
   virtual uint8_t getType() const {return kDisplay;}
 
-  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData) {
-    switch (reason) {
-      case kHSValue: {
-        m_lcd.setCursor(0, additionalData);
-        m_lcd.print(value);
+  virtual uint8_t update(const Linker *, uint8_t command, const void * data) {
+    switch (command) {
+      case kCmdUpdateHSValue: {
+        m_lcd.setCursor(0, 0);
+        m_lcd.print(*(reinterpret_cast<const uint8_t*>(data)));
         break;
       }
-      case kPWorkStarted: {
+      case kCmdTurnRelayOn: {
         m_lcd.setCursor(8, 0);
         m_lcd.print(m_lastTime);
         break;
       }
-      case kTimeUpdated: {
-        Time * time = (Time *)value;
+      case kCmdUpdateTime: {
+        const Time * time = reinterpret_cast<const Time *>(data);
         m_lcd.setCursor(8, 1);
         m_lastTime = time->getTimeStr();
         m_lcd.print(m_lastTime);
         break;
       }
-      case kHSLevelChanged: {
-        m_lcd.setCursor(2, additionalData);
-        m_lcd.print(value);
+      case kCmdUpdateHSLevel: {
+        m_lcd.setCursor(2, 0);
+        m_lcd.print(*(reinterpret_cast<const uint8_t*>(data)));
       }
     }
     return 0;
@@ -53,4 +55,6 @@ private:
   String m_lastTime;
 };
 
-#endif // PS_DIPLAY_H
+#endif // PS_DISPLAY
+
+#endif // PS_DISPLAY_H

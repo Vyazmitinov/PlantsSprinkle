@@ -1,26 +1,29 @@
 #include "SunAlarm.h"
 
+#ifdef PS_SUN_ALARM
+
 #include "SunTime.h"
 
-SunAlarm::SunAlarm(VirtualBuffer &buffer) {
+uint8_t SunAlarm::read(VirtualBuffer &buffer) {
+  Object::read(buffer);
   buffer.read(&m_timezone, sizeof(m_timezone));
   buffer.read(&m_longitude, sizeof(m_longitude));
   buffer.read(&m_latitude, sizeof(m_latitude));
   buffer.read(&m_state, sizeof(m_state));
+  return 5;
 }
 
-void SunAlarm::store(VirtualBuffer &buffer) {
+uint8_t SunAlarm::write(VirtualBuffer &buffer) {
+  Object::write(buffer);
   buffer.write(&m_timezone, sizeof(m_timezone));
   buffer.write(&m_longitude, sizeof(m_longitude));
   buffer.write(&m_latitude, sizeof(m_latitude));
   buffer.write(&m_state, sizeof(m_state));
+  return 5;
 }
 
-uint8_t SunAlarm::update(uint8_t reason, int value, uint8_t additionalData) {
-  if (reason != kTimeUpdated) {
-    return 0;
-  }
-  Time * time = (Time *)value;
+uint8_t SunAlarm::update(const Linker* linker, uint8_t , const void * data) {
+  Time * time = (Time *)data;
   if (((time->hour() == 0) && (time->minute() == 0) && (time->second() == 0))
       || ((m_sunrise.hour == 0) && (m_sunrise.minute == 0)))
   {
@@ -29,20 +32,20 @@ uint8_t SunAlarm::update(uint8_t reason, int value, uint8_t additionalData) {
 
   SimpleTime stime(time->hour(), time->minute());
 
-  uint8_t newState = kLightOff;
+  uint8_t newState = kSigStopLighting;
   if (stime < m_beforeSunrise) {
-    newState = kLightOff;
+    newState = kSigStopLighting;
   } else if (stime < m_sunrise) {
-    newState = kLightOn;
+    newState = kSigStartLighting;
   } else if (stime < m_sunset) {
-    newState = kLightOff;
+    newState = kSigStopLighting;
   } else if (stime < m_afterSunset) {
-    newState = kLightOn;
+    newState = kSigStartLighting;
   }
 
   if (newState != m_state) {
     m_state = newState;
-    return notify(m_state);
+    return notify(linker, m_state, nullptr);
   }
   return 0;
 }
@@ -62,6 +65,4 @@ void SunAlarm::_calcSunTimes(Time *time) {
   m_afterSunset.minute = getMinutes(sunsetTime);
 }
 
-uint8_t SunAlarm::notify(uint8_t command, int data) const {
-  return Linker::instance()->notify(this, command, data);
-}
+#endif // PS_SUN_ALARM

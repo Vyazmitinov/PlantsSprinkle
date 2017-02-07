@@ -1,16 +1,21 @@
 #ifndef PUMPER_ALARM_H
 #define PUMPER_ALARM_H
 
-#include "IObject.h"
+#include "Object.h"
 #include "Common.h"
 
-class Alarm: public IObject {
+#ifdef PS_ORDINAL_ALARM
+
+class Alarm: public Object {
 public:
-  Alarm(VirtualBuffer & buffer);
+  Alarm() : m_activated(false) {}
 
   virtual uint8_t getType() const {return kAlarm;}
-  virtual void store(VirtualBuffer & buffer);
-  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData);
+
+  virtual uint8_t read(VirtualBuffer &buffer);
+  virtual uint8_t write(VirtualBuffer & buffer);
+
+  virtual uint8_t update(const Linker *linker, uint8_t, const void * data);
 
 private:
   uint8_t m_hour;
@@ -19,5 +24,6 @@ private:
   bool m_activated;
 };
 
-#endif // PUMPER_ALARM_H
+#endif // PS_ORDINAL_ALARM
 
+#endif // PUMPER_ALARM_H

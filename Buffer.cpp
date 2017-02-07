@@ -41,21 +41,23 @@ uint8_t Buffer::write(const void *data, uint8_t size) {
   return size;
 }
 
-int Buffer::left() {
+uint16_t Buffer::left() {
   return m_capacity - m_pos;
 }
 
-static inline void EepromUpdate(int pos, uint8_t val) {
+static inline void EepromUpdate(uint16_t pos, uint8_t val) {
   if (EEPROM.read(pos) != val) {
     EEPROM.write(pos, val);
   }
 }
 
-EepromBuffer::EepromBuffer() {
+EepromBuffer::EepromBuffer(uint16_t shift)
+  : m_shift(shift)
+{
   Size size;
-  size.size_ch[0] = EEPROM.read(0);
-  size.size_ch[1] = EEPROM.read(1);
-  m_capacity = size.size_int;
+  size.size_ch[0] = EEPROM.read(m_shift);
+  size.size_ch[1] = EEPROM.read(m_shift + 1);
+  m_capacity = size.size_uint16;
 }
 
 EepromBuffer::~EepromBuffer() {
@@ -64,16 +66,16 @@ EepromBuffer::~EepromBuffer() {
 
 void EepromBuffer::saveCounters() {
   Size size;
-  size.size_int = m_pos;
-  EepromUpdate(0, size.size_ch[0]);
-  EepromUpdate(1, size.size_ch[1]);
+  size.size_uint16 = m_pos;
+  EepromUpdate(m_shift, size.size_ch[0]);
+  EepromUpdate(m_shift + 1, size.size_ch[1]);
 }
 
 uint8_t EepromBuffer::lookup(void *data, uint8_t size) {
   if (m_pos > m_capacity - size) {
     return 0;
   }
-  int pos = m_pos + 2;
+  int pos = m_shift + m_pos + 2;
   uint8_t * p_src = reinterpret_cast<uint8_t *>(data);
   for (int i = 0 ; i < size; i++, pos++, p_src++) {
     *p_src = EEPROM.read(pos);
@@ -82,7 +84,7 @@ uint8_t EepromBuffer::lookup(void *data, uint8_t size) {
 }
 
 uint8_t EepromBuffer::write(const void *data, uint8_t size) {
-  int pos = m_pos + 2;
+  int pos = m_shift + m_pos + 2;
   if (pos + size > E2END) {
     return 0;
   }
@@ -97,7 +99,7 @@ uint8_t EepromBuffer::write(const void *data, uint8_t size) {
   return size;
 }
 
-int EepromBuffer::left() {
+uint16_t EepromBuffer::left() {
   return m_capacity - m_pos;
 }
 
@@ -111,7 +113,7 @@ unsigned long EepromBuffer::_eepromCrc() {
 
   unsigned long crc = ~0L;
 
-  for (int index = 0; index < m_capacity; ++index) {
+  for (uint16_t index = 0; index < m_capacity; ++index) {
     crc = crc_table[(crc ^ EEPROM.read(index)) & 0x0f] ^ (crc >> 4);
     crc = crc_table[(crc ^ (EEPROM.read(index) >> 4)) & 0x0f] ^ (crc >> 4);
     crc = ~crc;
