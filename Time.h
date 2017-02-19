@@ -3,13 +3,15 @@
 
 #include <iarduino_RTC.h>
 
-#include "IObject.h"
 #include "Common.h"
+#include "Object.h"
 #include "Linker.h"
 
-class Time: public IObject {
+#ifdef PS_RTC_TIME
+
+class Time: public Object {
 public:
-  Time(VirtualBuffer &)
+  Time()
     : m_time(RTC_DS3231)
   {
     _setup();
@@ -17,11 +19,7 @@ public:
 
   virtual uint8_t getType() const {return kTime;}
 
-  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData) {
-    if (reason != kTick) {
-      return 0;
-    }
-
+  uint8_t update(const Linker* linker, uint8_t, const void *) {
     m_time.gettime();
 
     if ((m_second == m_time.seconds) && (m_minute == m_time.minutes) && (m_hour == m_time.Hours)) {
@@ -38,7 +36,7 @@ public:
     m_month = m_time.month;
     m_day = m_time.day;
 
-    return Linker::instance()->notify(this, kTimeUpdated, reinterpret_cast<int>(this));
+    return notify(linker, kSigTimeUpdated, this);
   }
   const String & getTimeStr() const { return m_time_str; }
 
@@ -63,6 +61,8 @@ private:
   uint8_t m_day;
   iarduino_RTC m_time;
 };
+
+#endif // PS_RTC_TIME
 
 #endif // PS_TIME_H
 

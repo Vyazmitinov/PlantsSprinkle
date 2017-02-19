@@ -2,14 +2,16 @@
 #define PS_HUMIDITY_SENSOR_H
 
 #include "Common.h"
-#include "IObject.h"
+#include "Object.h"
 
-const long HSCheckPumpingDelay = 10000 / RegularLoopDelay; // 10s
+#ifdef PS_HUMIDITY_SENSOR
+
+const long HSCheckPumpingDelay = 2000 / RegularLoopDelay; // 2s
 const long HSCheckDelay = 30000 / RegularLoopDelay; // 30s
 
 const int MeasuremensCount = 3;
 
-class HumiditySensor: public IObject {
+class HumiditySensor: public Object {
   class Measuremens {
   public:
     Measuremens();
@@ -22,11 +24,19 @@ class HumiditySensor: public IObject {
   };
 
 public:
-  HumiditySensor(VirtualBuffer & buffer);
+  HumiditySensor()
+    : m_checkDelay(0)
+    , m_firstRun(true)
+  {
+    _setup();
+  }
 
   virtual uint8_t getType() const {return kHumiditySensor;}
-  virtual void store(VirtualBuffer & buffer);
-  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData);
+
+  virtual uint8_t read(VirtualBuffer &buffer);
+  virtual uint8_t write(VirtualBuffer & buffer);
+
+  virtual uint8_t update(const Linker* linker, uint8_t command, const void *);
 
 private:
   static const int LevelDevider = 100;
@@ -42,11 +52,10 @@ private:
     return avg < m_level - 1;
   }
 
-  uint8_t _processData(int data);
-  uint8_t _tick();
-  uint8_t _levelDown();
-  uint8_t _levelUp();
-  uint8_t notify(uint8_t command, int data = 0) const;
+  uint8_t _processData(const Linker *linker, int data);
+  uint8_t _tick(const Linker *linker);
+  void _levelDown(const Linker *linker);
+  void _levelUp(const Linker* linker);
 
   uint8_t m_powerPin;
   uint8_t m_analogPin;
@@ -55,6 +64,8 @@ private:
   long m_checkDelay;
   bool m_firstRun;
 };
+
+#endif // PS_HUMIDITY_SENSOR
 
 #endif // PS_HUMIDITY_SENSOR_H
 

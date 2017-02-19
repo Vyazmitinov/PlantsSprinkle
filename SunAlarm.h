@@ -1,11 +1,13 @@
-#ifndef PS_SUN_ALARM
-#define PS_SUN_ALARM
+#ifndef PS_SUN_ALARM_H
+#define PS_SUN_ALARM_H
 
-#include "IObject.h"
 #include "Common.h"
+#include "Object.h"
 #include "Time.h"
 
-class SunAlarm: public IObject {
+#ifdef PS_SUN_ALARM
+
+class SunAlarm: public Object {
   const uint8_t HoursBeforeSunrise = 5;
   const uint8_t HoursAfterSunset = 2;
 
@@ -25,15 +27,15 @@ class SunAlarm: public IObject {
   };
 
 public:
-  SunAlarm(VirtualBuffer & buffer);
-
   virtual uint8_t getType() const {return kSunAlarm;}
-  virtual void store(VirtualBuffer & buffer);
-  virtual uint8_t update(uint8_t reason, int value, uint8_t additionalData);
+
+  virtual uint8_t read(VirtualBuffer &buffer);
+  virtual uint8_t write(VirtualBuffer & buffer);
+
+  virtual uint8_t update(const Linker *linker, uint8_t command, const void * data);
 
 private:
   void _calcSunTimes(Time * time);
-  uint8_t notify(uint8_t command, int data = 0) const;
 
   int8_t m_timezone;
   float m_longitude;
@@ -48,3 +50,4 @@ private:
 
 #endif // PS_SUN_ALARM
 
+#endif // PS_SUN_ALARM_H

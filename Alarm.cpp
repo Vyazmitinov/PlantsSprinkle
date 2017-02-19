@@ -2,25 +2,26 @@
 
 #include "Time.h"
 
-Alarm::Alarm(VirtualBuffer &buffer)
-  : m_activated(false)
-{
+#ifdef PS_ORDINAL_ALARM
+
+uint8_t Alarm::read(VirtualBuffer &buffer) {
+  Object::read(buffer);
   buffer.read(&m_hour, sizeof(m_hour));
   buffer.read(&m_minute, sizeof(m_minute));
   buffer.read(&m_second, sizeof(m_second));
+  return 4;
 }
 
-void Alarm::store(VirtualBuffer &buffer) {
+uint8_t Alarm::write(VirtualBuffer &buffer) {
+  Object::write(buffer);
   buffer.write(&m_hour, sizeof(m_hour));
   buffer.write(&m_minute, sizeof(m_minute));
   buffer.write(&m_second, sizeof(m_second));
+  return 4;
 }
 
-uint8_t Alarm::update(uint8_t reason, int value, uint8_t additionalData) {
-  if (reason != kTimeUpdated) {
-    return 0;
-  }
-  Time * time = (Time *)value;
+uint8_t Alarm::update(const Linker* linker, uint8_t, const void * data) {
+  const Time * time = reinterpret_cast<const Time *>(data);
   if ((time->hour() == 0) && (time->minute() == 0) && (time->second() == 0)) {
     m_activated = false;
   }
@@ -37,5 +38,7 @@ uint8_t Alarm::update(uint8_t reason, int value, uint8_t additionalData) {
     return 0;
   }
   m_activated = true;
-  return Linker::instance()->notify(this, kAlarmOccured);
+  return notify(linker, kSigAlarmOccured, nullptr);
 }
+
+#endif // PS_ORDINAL_ALARM
