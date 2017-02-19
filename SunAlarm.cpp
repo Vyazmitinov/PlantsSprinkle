@@ -54,10 +54,8 @@ void SunAlarm::_calcSunTimes(Time *time) {
   float sunriseTime = getSunTime(time->day(), time->month(), time->year(), true, m_timezone, m_longitude, m_latitude);
   float sunsetTime = getSunTime(time->day(), time->month(), time->year(), false, m_timezone, m_longitude, m_latitude);
 
-  m_sunrise.hour = sunriseTime;
-  m_sunrise.minute = getMinutes(sunriseTime);
-  m_sunset.hour = sunsetTime;
-  m_sunset.minute = getMinutes(sunsetTime);
+  m_sunrise = SimpleTime(sunriseTime, getMinutes(sunriseTime)) + SimpleTime(0, 15);
+  m_sunset = SimpleTime(sunsetTime, getMinutes(sunsetTime)) - SimpleTime(0, 15);
 
   m_beforeSunrise.hour = sunriseTime - HoursBeforeSunrise;
   m_beforeSunrise.minute = getMinutes(sunriseTime);

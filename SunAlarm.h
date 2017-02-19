@@ -12,10 +12,10 @@ class SunAlarm: public Object {
   const uint8_t HoursAfterSunset = 2;
 
   struct SimpleTime {
-    uint8_t hour;
-    uint8_t minute;
+    int8_t hour;
+    int8_t minute;
 
-    SimpleTime(uint8_t _hour = 0, uint8_t _minute = 0)
+    SimpleTime(int8_t _hour = 0, int8_t _minute = 0)
       : hour(_hour)
       , minute(_minute)
     {}
@@ -24,6 +24,31 @@ class SunAlarm: public Object {
       return (hour < r.hour)
           || ((hour == r.hour) && (minute < r.minute));
     }
+
+    const SimpleTime operator + (const SimpleTime &r) const {
+      SimpleTime time(this->hour + r.hour, this->minute + r.minute);
+      if (time.minute >= 60) {
+        ++time.hour;
+        time.minute -= 60;
+      }
+      if (time.hour >= 24) {
+        time.hour -= 24;
+      }
+      return time;
+    }
+
+    const SimpleTime operator - (const SimpleTime &r) const {
+      SimpleTime time(this->hour - r.hour, this->minute - r.minute);
+      if (time.minute < 0) {
+        --time.hour;
+        time.minute += 60;
+      }
+      if (time.hour < 0) {
+        time.hour += 24;
+      }
+      return time;
+    }
+
   };
 
 public:
